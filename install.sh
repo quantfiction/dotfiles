@@ -122,6 +122,15 @@ if [ -f "$DOTFILES_DIR/claude/scripts/file-suggestion.sh" ]; then
     log "Installed file-suggestion.sh"
 fi
 
+# Claude commands
+info "Setting up Claude commands..."
+mkdir -p "$HOME/.claude/commands"
+if [ -d "$DOTFILES_DIR/claude/commands" ]; then
+    cp "$DOTFILES_DIR/claude/commands"/*.md "$HOME/.claude/commands/" 2>/dev/null && \
+        log "Installed slash commands" || \
+        warn "No commands to install"
+fi
+
 # Claude settings template
 if [ ! -f "$HOME/.claude/settings.json" ] && [ -f "$DOTFILES_DIR/claude/settings.json.template" ]; then
     warn "Claude settings.json not found"

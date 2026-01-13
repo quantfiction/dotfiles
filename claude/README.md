@@ -6,6 +6,14 @@ This directory contains Claude Code configuration files, hooks, scripts, and cus
 
 ```
 claude/
+├── commands/
+│   ├── ask-questions.md        # Slash command: /ask-questions
+│   ├── bead-review.md          # Slash command: /bead-review
+│   ├── create-beads.md         # Slash command: /create-beads
+│   ├── launch-swarm.md         # Slash command: /launch-swarm
+│   ├── plan-polish.md          # Slash command: /plan-polish
+│   ├── review.md               # Slash command: /review
+│   └── write-beads.md          # Slash command: /write-beads
 ├── hooks/
 │   ├── git_safety_guard.sh     # Blocks destructive git commands
 │   └── git_safety_guard.py     # Additional git safety checks
@@ -24,6 +32,24 @@ claude/
 ├── settings.json.template      # Settings template (copy to ~/.claude/settings.json)
 └── README.md                   # This file
 ```
+
+## Slash Commands
+
+User-friendly slash commands that invoke the global skills. These provide documentation and easier invocation.
+
+### Available Commands
+
+- `/ask-questions` - Clarify ambiguous requirements before implementing
+- `/plan-polish` - Convert rough plans to Technical Design Documents
+- `/write-beads` - Convert TDDs into atomic tasks
+- `/bead-review` - QA/audit task decomposition
+- `/create-beads` - Import tasks into bd issue tracker
+- `/launch-swarm` - Launch parallel agent swarm
+- `/review` - General code review
+
+**Usage:** Just type the slash command in Claude Code, e.g., `/ask-questions`
+
+The commands provide helpful documentation and examples of how to use each skill effectively.
 
 ## Global Skills
 

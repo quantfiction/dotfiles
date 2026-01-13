@@ -8,7 +8,8 @@ Personal configuration files and development environment setup.
 - **Git config**: Multi-account setup with work/personal identities
 - **SSH config**: Host aliases for work and personal GitHub accounts
 - **Claude Code**:
-  - **6 global skills**: ask-questions, plan-polish, write-beads, bead-review, create-beads, launch-swarm
+  - **7 slash commands**: /ask-questions, /plan-polish, /write-beads, /bead-review, /create-beads, /launch-swarm, /review
+  - **6 global skills**: Complete workflow automation skills
   - **Git safety hooks**: Prevent destructive git/filesystem commands
   - **File suggestion script**: Custom fuzzy finder using rg + fzf
   - **Settings template**: Recommended Claude Code configuration
@@ -60,6 +61,14 @@ Just run steps 1, 2, 3, 4, and 5 above. The install script handles everything au
 ```
 dotfiles/
 ├── claude/
+│   ├── commands/                   # 7 slash commands
+│   │   ├── ask-questions.md
+│   │   ├── bead-review.md
+│   │   ├── create-beads.md
+│   │   ├── launch-swarm.md
+│   │   ├── plan-polish.md
+│   │   ├── review.md
+│   │   └── write-beads.md
 │   ├── hooks/
 │   │   ├── git_safety_guard.sh     # Blocks destructive git commands
 │   │   └── git_safety_guard.py     # Additional git safety checks
@@ -176,16 +185,30 @@ See `git/gitconfig` for full list and to customize.
 
 This dotfiles repo includes custom Claude Code configuration for enhanced safety and productivity.
 
+### Slash Commands
+
+Seven easy-to-use slash commands available from any project:
+
+- `/ask-questions` - Clarify ambiguous requirements before implementing
+- `/plan-polish` - Convert rough plans to Technical Design Documents
+- `/write-beads` - Convert TDDs into atomic tasks
+- `/bead-review` - QA/audit task decomposition
+- `/create-beads` - Import tasks into bd issue tracker
+- `/launch-swarm` - Launch parallel agent swarm
+- `/review` - General code review
+
+Just type the command in Claude Code (e.g., `/ask-questions`) to use it.
+
 ### Global Skills
 
-Six workflow and planning skills are available globally (use from any project):
+Six workflow and planning skills power the slash commands above. These can also be invoked directly:
 
-- `/ask-questions-if-underspecified` - Clarify ambiguous requirements before implementing
-- `/plan-polish` - Convert rough plans into Technical Design Documents
-- `/write-beads` - Convert TDDs into atomic implementation tasks
-- `/bead-review` - QA/audit of task decomposition
-- `/create-beads` - Import tasks into bd issue tracker
-- `/launch-swarm` - Launch parallel agent swarm for tasks
+- `ask-questions-if-underspecified`
+- `plan-polish`
+- `write-beads`
+- `bead-review`
+- `create-beads`
+- `launch-swarm`
 
 See `claude/README.md` for detailed documentation of each skill.
 
