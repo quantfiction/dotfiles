@@ -1,8 +1,5 @@
-[user]
-	# Default to personal account (quantfiction)
-	# Override in work repos with: git config user.email your-work@email.com
-	name = Quant Fiction
-	email = quantfiction1@protonmail.com
+# NO DEFAULT USER - Set per-repo to avoid committing with wrong account
+# Use: git personal  OR  git work  in each repo
 
 [filter "lfs"]
 	clean = git-lfs clean -- %f
@@ -23,10 +20,13 @@
 	default = current
 
 [alias]
-	# Quick alias to switch to work identity in current repo
+	# Set work identity in current repo
 	work = "!git config user.name 'Brian Blandin' && git config user.email 'brian@thetie.io' && echo 'Switched to work identity'"
 
-	# Check which identity is active
+	# Set personal identity in current repo
+	personal = "!git config user.name 'Quant Fiction' && git config user.email 'quantfiction1@protonmail.com' && echo 'Switched to personal identity'"
+
+	# Check which identity is active (will error if not set)
 	whoami = "!git config user.name && git config user.email"
 
 	# Common shortcuts
@@ -35,3 +35,6 @@
 	br = branch
 	ci = commit
 	unstage = reset HEAD --
+[safe]
+	directory = /home/ubuntu/actions-runner/_work/mindhive/mindhive
+	directory = /home/ubuntu/actions-runner/_work/mindhive/mindhive
