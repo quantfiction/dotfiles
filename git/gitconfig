@@ -1,0 +1,18 @@
+[user]
+	name = YOUR_NAME_HERE
+	email = YOUR_EMAIL_HERE
+
+[filter "lfs"]
+	clean = git-lfs clean -- %f
+	smudge = git-lfs smudge -- %f
+	process = git-lfs filter-process
+	required = true
+
+[init]
+	defaultBranch = main
+
+[core]
+	editor = nano
+
+[pull]
+	rebase = false

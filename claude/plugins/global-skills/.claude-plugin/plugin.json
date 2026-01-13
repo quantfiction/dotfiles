@@ -1,0 +1,14 @@
+{
+  "name": "global-skills",
+  "description": "Custom global skills for Claude Code",
+  "version": "1.0.0",
+  "author": {
+    "name": "Local User"
+  },
+  "license": "MIT",
+  "keywords": [
+    "skills",
+    "custom",
+    "global"
+  ]
+}

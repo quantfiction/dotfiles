@@ -1,0 +1,15 @@
+{
+  "name": "custom",
+  "description": "Custom local plugins and skills",
+  "owner": {
+    "name": "Local User"
+  },
+  "plugins": [
+    {
+      "name": "global-skills",
+      "source": "./",
+      "description": "Custom global skills for Claude Code",
+      "version": "1.0.0"
+    }
+  ]
+}

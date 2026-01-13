@@ -1,0 +1,22 @@
+
+# >>> MCP Agent Mail bd path /home/ubuntu/.local/bin
+if [[ ":$PATH:" != *":/home/ubuntu/.local/bin:"* ]]; then
+  export PATH="/home/ubuntu/.local/bin:$PATH"
+fi
+# <<< MCP Agent Mail bd path
+
+# bun
+export BUN_INSTALL="$HOME/.bun"
+export PATH="$BUN_INSTALL/bin:$PATH"
+
+# >>> MCP Agent Mail alias
+alias am='cd "/home/ubuntu/mcp_agent_mail" && scripts/run_server_with_token.sh'
+# <<< MCP Agent Mail alias
+
+. "$HOME/.local/bin/env"
+
+. "$HOME/.atuin/bin/env"
+
+[[ -f ~/.bash-preexec.sh ]] && source ~/.bash-preexec.sh
+eval "$(atuin init bash)"
+. "$HOME/.cargo/env"
