@@ -80,41 +80,60 @@ dotfiles/
 
 This dotfiles repo is configured for multiple Git accounts (work and personal).
 
-### Default Configuration
+### Important: No Default Identity
 
-- **Default account**: Personal (quantfiction)
-- **SSH host aliases**: Configured in `ssh/config`
-  - `github.com-quantfiction` → Personal account
-  - `github.com-tie` → Work account
+**There is NO default git identity configured.** This forces you to explicitly set your identity per-repo, preventing accidental commits to the wrong account.
+
+### SSH Host Aliases
+
+Configured in `ssh/config`:
+- `github.com-quantfiction` → Personal account
+- `github.com-tie` → Work account
 
 ### Using the Right Account
 
-**Personal repos** (default):
+**Personal repos**:
 ```bash
-# Clone normally
+# Clone with personal host alias
 git clone git@github.com-quantfiction:username/repo.git
+cd repo
 
-# Git identity already configured (personal email/name)
-git whoami  # Check current identity
+# Set personal identity (REQUIRED before first commit)
+git personal
+
+# Verify
+git whoami  # Shows: Quant Fiction / quantfiction1@protonmail.com
 ```
 
 **Work repos**:
 ```bash
-# Clone using work host alias
+# Clone with work host alias
 git clone git@github.com-tie:company/repo.git
-
-# Switch to work identity
 cd repo
-git work  # Sets work email/name for this repo only
+
+# Set work identity (REQUIRED before first commit)
+git work
 
 # Verify
-git whoami
+git whoami  # Shows: Brian Blandin / brian@thetie.io
 ```
+
+### What Happens If You Forget?
+
+If you try to commit without setting an identity:
+```bash
+git commit -m "test"
+# Error: Author identity unknown
+# *** Please tell me who you are.
+```
+
+This is intentional! Just run `git personal` or `git work` and try again.
 
 ### Git Aliases
 
-- `git whoami` - Show current git identity (name and email)
-- `git work` - Switch current repo to work identity
+- `git whoami` - Show current git identity (errors if not set)
+- `git personal` - Set personal identity in current repo
+- `git work` - Set work identity in current repo
 - `git st` - Status
 - `git co` - Checkout
 - `git br` - Branch
@@ -122,20 +141,19 @@ git whoami
 
 See `git/gitconfig` for full list and to customize.
 
-### First-Time Git Setup
+### First-Time Setup on New Machines
 
-1. Edit `git/gitconfig` and replace placeholders:
-   - `YOUR_NAME_HERE` → Your actual name
-   - `YOUR_PERSONAL_EMAIL_HERE` → Your personal email
-   - `YOUR_WORK_NAME_HERE` → Your work name (if different)
-   - `YOUR_WORK_EMAIL_HERE` → Your work email
+1. Copy your private SSH keys (see `ssh/README.md`)
 
-2. Copy your private SSH keys to new machines (see `ssh/README.md`)
-
-3. Test SSH connections:
+2. Test SSH connections:
    ```bash
    ssh -T git@github.com-quantfiction  # Personal
    ssh -T git@github.com-tie           # Work
+   ```
+
+3. In each repo, set your identity before committing:
+   ```bash
+   git personal  # or git work
    ```
 
 ## Adding New Configs
