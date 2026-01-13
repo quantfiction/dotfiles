@@ -62,6 +62,38 @@ create_symlink "$DOTFILES_DIR/shell/zshrc" "$HOME/.zshrc"
 info "Setting up git configuration..."
 create_symlink "$DOTFILES_DIR/git/gitconfig" "$HOME/.gitconfig"
 
+# SSH config
+info "Setting up SSH configuration..."
+mkdir -p "$HOME/.ssh"
+chmod 700 "$HOME/.ssh"
+
+# Copy SSH config
+if [ -f "$DOTFILES_DIR/ssh/config" ]; then
+    backup_if_exists "$HOME/.ssh/config"
+    cp "$DOTFILES_DIR/ssh/config" "$HOME/.ssh/config"
+    chmod 600 "$HOME/.ssh/config"
+    log "Copied SSH config"
+fi
+
+# Copy public keys
+for pubkey in "$DOTFILES_DIR/ssh"/*.pub; do
+    if [ -f "$pubkey" ]; then
+        filename=$(basename "$pubkey")
+        cp "$pubkey" "$HOME/.ssh/$filename"
+        chmod 644 "$HOME/.ssh/$filename"
+        log "Copied public key: $filename"
+    fi
+done
+
+# Check for private keys
+warn "IMPORTANT: Private SSH keys are NOT in dotfiles (for security)"
+warn "You must manually copy your private keys to ~/.ssh/"
+warn "Required keys based on your SSH config:"
+echo "  - ~/.ssh/id_ed_tie (work)"
+echo "  - ~/.ssh/id_ed_quantfiction (personal)"
+echo "  Set permissions: chmod 600 ~/.ssh/id_ed_*"
+echo
+
 # Claude plugins
 info "Setting up Claude plugins..."
 mkdir -p "$HOME/.claude/plugins/cache/custom/global-skills"

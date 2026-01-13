@@ -1,0 +1,15 @@
+# Work Account
+Host github.com-tie
+   HostName github.com
+   AddKeysToAgent yes
+   IdentitiesOnly yes
+   User git
+   IdentityFile ~/.ssh/id_ed_tie
+
+# Personal Account
+Host github.com-quantfiction
+   HostName github.com
+   AddKeysToAgent yes
+   IdentitiesOnly yes
+   User git
+   IdentityFile ~/.ssh/id_ed_quantfiction

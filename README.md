@@ -5,7 +5,8 @@ Personal configuration files and development environment setup.
 ## What's Included
 
 - **Shell configs**: bashrc, profile, zshrc
-- **Git config**: gitconfig with LFS support
+- **Git config**: Multi-account setup with work/personal identities
+- **SSH config**: Host aliases for work and personal GitHub accounts
 - **Claude plugins**: Custom global skills for Claude Code
 - **Install script**: Automated symlink setup
 
@@ -62,6 +63,10 @@ dotfiles/
 │               └── ask-questions-if-underspecified/
 ├── git/
 │   └── gitconfig                   # Git configuration
+├── ssh/
+│   ├── config                      # SSH host aliases for multi-account
+│   ├── *.pub                       # Public SSH keys (private keys NOT included)
+│   └── README.md                   # SSH setup guide
 ├── shell/
 │   ├── bashrc                      # Bash configuration
 │   ├── profile                     # Shell profile
@@ -70,6 +75,68 @@ dotfiles/
 ├── .gitignore                      # Prevents committing secrets
 └── README.md                       # This file
 ```
+
+## Multi-Account Git Setup
+
+This dotfiles repo is configured for multiple Git accounts (work and personal).
+
+### Default Configuration
+
+- **Default account**: Personal (quantfiction)
+- **SSH host aliases**: Configured in `ssh/config`
+  - `github.com-quantfiction` → Personal account
+  - `github.com-tie` → Work account
+
+### Using the Right Account
+
+**Personal repos** (default):
+```bash
+# Clone normally
+git clone git@github.com-quantfiction:username/repo.git
+
+# Git identity already configured (personal email/name)
+git whoami  # Check current identity
+```
+
+**Work repos**:
+```bash
+# Clone using work host alias
+git clone git@github.com-tie:company/repo.git
+
+# Switch to work identity
+cd repo
+git work  # Sets work email/name for this repo only
+
+# Verify
+git whoami
+```
+
+### Git Aliases
+
+- `git whoami` - Show current git identity (name and email)
+- `git work` - Switch current repo to work identity
+- `git st` - Status
+- `git co` - Checkout
+- `git br` - Branch
+- `git ci` - Commit
+
+See `git/gitconfig` for full list and to customize.
+
+### First-Time Git Setup
+
+1. Edit `git/gitconfig` and replace placeholders:
+   - `YOUR_NAME_HERE` → Your actual name
+   - `YOUR_PERSONAL_EMAIL_HERE` → Your personal email
+   - `YOUR_WORK_NAME_HERE` → Your work name (if different)
+   - `YOUR_WORK_EMAIL_HERE` → Your work email
+
+2. Copy your private SSH keys to new machines (see `ssh/README.md`)
+
+3. Test SSH connections:
+   ```bash
+   ssh -T git@github.com-quantfiction  # Personal
+   ssh -T git@github.com-tie           # Work
+   ```
 
 ## Adding New Configs
 

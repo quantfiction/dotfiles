@@ -1,6 +1,8 @@
 [user]
+	# Default to personal account (quantfiction)
+	# Override in work repos with: git config user.email your-work@email.com
 	name = YOUR_NAME_HERE
-	email = YOUR_EMAIL_HERE
+	email = YOUR_PERSONAL_EMAIL_HERE
 
 [filter "lfs"]
 	clean = git-lfs clean -- %f
@@ -16,3 +18,20 @@
 
 [pull]
 	rebase = false
+
+[push]
+	default = current
+
+[alias]
+	# Quick alias to switch to work identity in current repo
+	work = "!git config user.name 'YOUR_WORK_NAME_HERE' && git config user.email 'YOUR_WORK_EMAIL_HERE' && echo 'Switched to work identity'"
+
+	# Check which identity is active
+	whoami = "!git config user.name && git config user.email"
+
+	# Common shortcuts
+	st = status
+	co = checkout
+	br = branch
+	ci = commit
+	unstage = reset HEAD --
