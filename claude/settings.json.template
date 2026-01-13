@@ -1,0 +1,38 @@
+{
+  "fileSuggestion": {
+    "type": "command",
+    "command": "~/.claude/scripts/file-suggestion.sh"
+  },
+  "model": "sonnet",
+  "hooks": {
+    "PreToolUse": [
+      {
+        "matcher": "Bash",
+        "hooks": [
+          {
+            "type": "command",
+            "command": "~/.claude/hooks/git_safety_guard.sh"
+          },
+          {
+            "type": "command",
+            "command": "~/.claude/hooks/git_safety_guard.py"
+          }
+        ]
+      }
+    ]
+  },
+  "enabledPlugins": {
+    "beads@beads-marketplace": true,
+    "mgrep@Mixedbread-Grep": true
+  },
+  "mcpServers": {
+    "_comment": "Add your MCP servers here. Example:",
+    "_example": {
+      "type": "http",
+      "url": "http://127.0.0.1:8765/mcp/",
+      "headers": {
+        "Authorization": "Bearer YOUR_TOKEN_HERE"
+      }
+    }
+  }
+}

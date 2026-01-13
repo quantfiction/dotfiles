@@ -95,9 +95,40 @@ echo "  Set permissions: chmod 600 ~/.ssh/id_ed_*"
 echo
 
 # Claude plugins
-info "Setting up Claude plugins..."
+info "Setting up Claude Code..."
 mkdir -p "$HOME/.claude/plugins/cache/custom/global-skills"
 create_symlink "$DOTFILES_DIR/claude/plugins/global-skills" "$HOME/.claude/plugins/cache/custom/global-skills/1.0.0"
+
+# Claude hooks
+info "Setting up Claude hooks..."
+mkdir -p "$HOME/.claude/hooks"
+if [ -f "$DOTFILES_DIR/claude/hooks/git_safety_guard.sh" ]; then
+    cp "$DOTFILES_DIR/claude/hooks/git_safety_guard.sh" "$HOME/.claude/hooks/"
+    chmod +x "$HOME/.claude/hooks/git_safety_guard.sh"
+    log "Installed git_safety_guard.sh"
+fi
+if [ -f "$DOTFILES_DIR/claude/hooks/git_safety_guard.py" ]; then
+    cp "$DOTFILES_DIR/claude/hooks/git_safety_guard.py" "$HOME/.claude/hooks/"
+    chmod +x "$HOME/.claude/hooks/git_safety_guard.py"
+    log "Installed git_safety_guard.py"
+fi
+
+# Claude scripts
+info "Setting up Claude scripts..."
+mkdir -p "$HOME/.claude/scripts"
+if [ -f "$DOTFILES_DIR/claude/scripts/file-suggestion.sh" ]; then
+    cp "$DOTFILES_DIR/claude/scripts/file-suggestion.sh" "$HOME/.claude/scripts/"
+    chmod +x "$HOME/.claude/scripts/file-suggestion.sh"
+    log "Installed file-suggestion.sh"
+fi
+
+# Claude settings template
+if [ ! -f "$HOME/.claude/settings.json" ] && [ -f "$DOTFILES_DIR/claude/settings.json.template" ]; then
+    warn "Claude settings.json not found"
+    info "Copy template: cp ~/dotfiles/claude/settings.json.template ~/.claude/settings.json"
+elif [ -f "$HOME/.claude/settings.json" ]; then
+    log "Claude settings.json already exists (not overwriting)"
+fi
 
 echo
 log "Dotfiles installation complete!"

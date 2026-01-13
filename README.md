@@ -7,7 +7,11 @@ Personal configuration files and development environment setup.
 - **Shell configs**: bashrc, profile, zshrc
 - **Git config**: Multi-account setup with work/personal identities
 - **SSH config**: Host aliases for work and personal GitHub accounts
-- **Claude plugins**: Custom global skills for Claude Code
+- **Claude Code**:
+  - **6 global skills**: ask-questions, plan-polish, write-beads, bead-review, create-beads, launch-swarm
+  - **Git safety hooks**: Prevent destructive git/filesystem commands
+  - **File suggestion script**: Custom fuzzy finder using rg + fzf
+  - **Settings template**: Recommended Claude Code configuration
 - **Install script**: Automated symlink setup
 
 ## Quick Start
@@ -56,11 +60,23 @@ Just run steps 1, 2, 3, 4, and 5 above. The install script handles everything au
 ```
 dotfiles/
 ├── claude/
-│   └── plugins/
-│       └── global-skills/          # Custom Claude Code plugins
-│           ├── .claude-plugin/
-│           └── skills/
-│               └── ask-questions-if-underspecified/
+│   ├── hooks/
+│   │   ├── git_safety_guard.sh     # Blocks destructive git commands
+│   │   └── git_safety_guard.py     # Additional git safety checks
+│   ├── plugins/
+│   │   └── global-skills/          # Custom global skills plugin
+│   │       ├── .claude-plugin/
+│   │       └── skills/             # 6 workflow skills
+│   │           ├── ask-questions-if-underspecified/
+│   │           ├── plan-polish/
+│   │           ├── write-beads/
+│   │           ├── bead-review/
+│   │           ├── create-beads/
+│   │           └── launch-swarm/
+│   ├── scripts/
+│   │   └── file-suggestion.sh      # Custom file fuzzy finder
+│   ├── settings.json.template      # Claude Code settings template
+│   └── README.md                   # Claude Code documentation
 ├── git/
 │   └── gitconfig                   # Git configuration
 ├── ssh/
@@ -155,6 +171,66 @@ See `git/gitconfig` for full list and to customize.
    ```bash
    git personal  # or git work
    ```
+
+## Claude Code Configuration
+
+This dotfiles repo includes custom Claude Code configuration for enhanced safety and productivity.
+
+### Global Skills
+
+Six workflow and planning skills are available globally (use from any project):
+
+- `/ask-questions-if-underspecified` - Clarify ambiguous requirements before implementing
+- `/plan-polish` - Convert rough plans into Technical Design Documents
+- `/write-beads` - Convert TDDs into atomic implementation tasks
+- `/bead-review` - QA/audit of task decomposition
+- `/create-beads` - Import tasks into bd issue tracker
+- `/launch-swarm` - Launch parallel agent swarm for tasks
+
+See `claude/README.md` for detailed documentation of each skill.
+
+### Git Safety Hooks
+
+Two hooks prevent Claude from running destructive commands:
+
+**Blocked:**
+- `git reset --hard` / `git push --force` / `git clean -f`
+- `git checkout -- <file>` / `git restore` / `git branch -D`
+- `rm -rf` (except /tmp directories)
+
+**Allowed:**
+- `git clean -n` (dry run) / `git push --force-with-lease`
+- `rm -rf /tmp/...` (temporary directories)
+
+The hooks are installed automatically by `install.sh`.
+
+### File Suggestion Script
+
+Custom fuzzy finder for file suggestions using ripgrep + fzf.
+
+**Requirements:**
+```bash
+sudo apt install ripgrep fzf jq
+```
+
+Automatically configured by the settings template.
+
+### Settings Template
+
+Copy and customize for your machine:
+
+```bash
+cp ~/dotfiles/claude/settings.json.template ~/.claude/settings.json
+# Edit to add your MCP servers, adjust plugins, etc.
+```
+
+The template includes:
+- File suggestion configuration
+- Git safety hook setup
+- Model preference (sonnet)
+- Plugin recommendations
+
+See `claude/README.md` for full details.
 
 ## Adding New Configs
 
