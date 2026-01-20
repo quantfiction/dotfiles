@@ -29,6 +29,7 @@ alias cod='codex'
 alias gmi='gemini --yolo'
 alias ls='lsd'
 alias start-mindhive='/home/ubuntu/repositories/mindhive/scripts/dev-expose.sh'
+alias swarm-monitor='cd /home/ubuntu/repositories/mindhive/services/swarm-orchestrator && pnpm tsx src/bin/monitor.ts'
 
 # bun completions
 [ -s "/home/ubuntu/.bun/_bun" ] && source "/home/ubuntu/.bun/_bun"
