@@ -13,12 +13,30 @@ Convert a Technical Design Document (TDD) into a BEADS.md markdown file containi
 
 Use when you have:
 - A polished Technical Design Document from Stage 2
+- DESIGN_REVIEW.md with verdict `APPROVED_FOR_DECOMPOSITION`
 - Need to break down work for autonomous coding agents
 - Want to create trackable, independently-executable tasks
 
 ## Role
 
 You are a task decomposition engine preparing work for autonomous coding agents.
+
+## CRITICAL: Consume Review Findings First
+
+Before decomposing, check for `docs/plans/<project>/DESIGN_REVIEW.md`:
+
+1. **If DESIGN_REVIEW.md exists:**
+   - Extract all `should-fix` findings (ignore `waived` and `minor`)
+   - For each should-fix, identify which bead it maps to by matching:
+     - Section references (e.g., "section:6.3" → bead for that component)
+     - API endpoints (e.g., "api:GET /swarm/history" → API bead)
+     - File paths (e.g., "file:src/lib/auth.ts" → relevant bead)
+   - Add mapped should-fixes to the bead's **Implementation Notes** section
+   - For cross-cutting should-fixes that don't map to a single bead, create a **HARDEN-01: Hardening** bead
+
+2. **If no DESIGN_REVIEW.md exists:**
+   - Proceed with TDD-only decomposition
+   - Log warning: "No DESIGN_REVIEW.md found - should-fixes not incorporated"
 
 ## Bead definition
 
@@ -90,6 +108,9 @@ What implementers commonly get wrong.
 - [ ] Specific verifiable condition
 - [ ] Passes: {test command}
 
+### Implementation Notes
+> **Should-fix from review:** (if any mapped to this bead)
+> - `design-review::type::anchor`: Description of what to address
 ```
 
 **CRITICAL FORMAT RULES**:
@@ -303,3 +324,5 @@ Before finalizing, verify:
 - [ ] All dependencies listed in Deps section
 - [ ] Dependency commands section is complete
 - [ ] Labels include project name and phase
+- [ ] **All non-waived should-fixes mapped** to beads or HARDEN bead
+- [ ] **Cross-cutting should-fixes** have a dedicated HARDEN bead (if any)
