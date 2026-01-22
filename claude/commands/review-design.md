@@ -32,24 +32,24 @@ All findings must be classified as: `net-new`, `known-open`, `regression`, or `w
 - Applies stop rules: 0 blockers + 0 regressions in two consecutive passes
 - All blockers must cite anchored evidence (section heading, file path, API endpoint)
 
+## Feedback loop
+If verdict is `REVISE_AND_RESUBMIT`:
+1. Return to `/plan-polish` with Required Revisions
+2. Update TECHNICAL_DESIGN.md
+3. Re-run `/review-design` until `APPROVED_FOR_DECOMPOSITION`
+
 ## Should-Fix Handling
 
 Should-fixes are NOT ignored after approval. They follow this lifecycle:
 
 1. **During review**: Classified as `net-new`, `known-open`, `regression`, or `waived`
-2. **Waiving**: Issues can be marked `waived` with rationale in DESIGN_LEDGER.md
+2. **Waiving**: Issues can be marked `waived` with rationale (e.g., "internal API only, no auth needed")
 3. **After APPROVED**: Non-waived should-fixes are consumed by `/write-beads`:
    - Mapped to relevant beads as Implementation Notes
    - Cross-cutting issues get a dedicated HARDEN bead
 4. **During implementation**: Agents address should-fixes as part of bead work
 
 **To waive a should-fix**: Update DESIGN_LEDGER.md with status `waived` and rationale.
-
-## Feedback loop
-If verdict is `REVISE_AND_RESUBMIT`:
-1. Return to `/plan-polish` with Required Revisions
-2. Update TECHNICAL_DESIGN.md
-3. Re-run `/review-design` until `APPROVED_FOR_DECOMPOSITION`
 
 ## Next steps
 - If APPROVED: Run `/write-beads` to decompose into implementation beads (will consume should-fixes)

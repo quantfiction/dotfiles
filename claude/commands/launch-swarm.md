@@ -1,4 +1,7 @@
 # Launch Swarm
+
+> **DEPRECATED:** Use `/swarm-orchestrator` and `pnpm swarm` instead. See `docs/guides/planning-lifecycle.md` for the updated workflow.
+
 Launch parallel agents to work on beads with a specific label.
 
 ## What this does

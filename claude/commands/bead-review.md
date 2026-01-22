@@ -2,7 +2,7 @@
 QA/adversarial audit of bead decomposition.
 
 ## What this does
-- Reviews beads against the Technical Design Document for completeness
+- Reviews bd-compatible BEADS.md beads against the Technical Design Document
 - Identifies atomicity and dependency issues
 - Checks context sufficiency for autonomous execution
 - Flags risk and hallucination guardrails
@@ -10,7 +10,7 @@ QA/adversarial audit of bead decomposition.
 ## Usage
 Provide both:
 1. The polished Technical Design Document from Stage 2
-2. The beads output from Stage 3
+2. `BEADS.md` in bd-compatible markdown (H2 `## ID: Title` sections with metadata lines like `**Priority:**`, `**Type:**`, `**Labels:**`, `**Blocked by:**`)
 
 The agent will audit for:
 - Coverage completeness (every design requirement maps to ≥1 bead)
