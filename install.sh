@@ -127,8 +127,17 @@ info "Setting up Claude commands..."
 mkdir -p "$HOME/.claude/commands"
 if [ -d "$DOTFILES_DIR/claude/commands" ]; then
     cp "$DOTFILES_DIR/claude/commands"/*.md "$HOME/.claude/commands/" 2>/dev/null && \
-        log "Installed slash commands" || \
-        warn "No commands to install"
+        log "Installed Claude slash commands" || \
+        warn "No Claude commands to install"
+fi
+
+# OpenCode commands
+info "Setting up OpenCode commands..."
+mkdir -p "$HOME/.opencode/command"
+if [ -d "$DOTFILES_DIR/opencode/command" ]; then
+    cp "$DOTFILES_DIR/opencode/command"/*.md "$HOME/.opencode/command/" 2>/dev/null && \
+        log "Installed OpenCode slash commands" || \
+        warn "No OpenCode commands to install"
 fi
 
 # Claude settings template
