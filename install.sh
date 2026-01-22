@@ -3,9 +3,16 @@
 # Dotfiles installation script
 # Creates symlinks from home directory to dotfiles repo
 #
+# Usage:
+#   ./install.sh          # Install everything
+#   ./install.sh agents   # Install only agent commands/skills (Claude + OpenCode)
+#   ./install.sh claude   # Install only Claude agent commands/skills
+#   ./install.sh opencode # Install only OpenCode agent commands
+#
 set -euo pipefail
 
 DOTFILES_DIR="$HOME/dotfiles"
+INSTALL_MODE="${1:-all}"
 
 # Colors for output
 GREEN='\033[0;32m'
@@ -48,6 +55,75 @@ create_symlink() {
     ln -sf "$source" "$target"
     log "Linked $target → $source"
 }
+
+# Install Claude agent commands and skills
+install_claude_agents() {
+    info "Setting up Claude Code commands..."
+    mkdir -p "$HOME/.claude/commands"
+    if [ -d "$DOTFILES_DIR/claude/commands" ]; then
+        cp "$DOTFILES_DIR/claude/commands"/*.md "$HOME/.claude/commands/" 2>/dev/null && \
+            log "Installed Claude slash commands" || \
+            warn "No Claude commands to install"
+    fi
+
+    info "Setting up Claude Code skills..."
+    mkdir -p "$HOME/.claude/plugins/cache/custom/global-skills"
+    create_symlink "$DOTFILES_DIR/claude/plugins/global-skills" "$HOME/.claude/plugins/cache/custom/global-skills/1.0.0"
+}
+
+# Install OpenCode agent commands
+install_opencode_agents() {
+    info "Setting up OpenCode commands..."
+    mkdir -p "$HOME/.opencode/command"
+    if [ -d "$DOTFILES_DIR/opencode/command" ]; then
+        cp "$DOTFILES_DIR/opencode/command"/*.md "$HOME/.opencode/command/" 2>/dev/null && \
+            log "Installed OpenCode slash commands" || \
+            warn "No OpenCode commands to install"
+    fi
+}
+
+# Handle agents-only install modes
+case "$INSTALL_MODE" in
+    agents)
+        echo "Installing agent commands and skills only..."
+        echo
+        install_claude_agents
+        install_opencode_agents
+        echo
+        log "Agent installation complete!"
+        info "Restart Claude Code / OpenCode to load changes"
+        exit 0
+        ;;
+    claude)
+        echo "Installing Claude agent commands and skills only..."
+        echo
+        install_claude_agents
+        echo
+        log "Claude agent installation complete!"
+        info "Restart Claude Code to load changes"
+        exit 0
+        ;;
+    opencode)
+        echo "Installing OpenCode agent commands only..."
+        echo
+        install_opencode_agents
+        echo
+        log "OpenCode agent installation complete!"
+        info "Restart OpenCode to load changes"
+        exit 0
+        ;;
+    all)
+        # Continue with full install below
+        ;;
+    *)
+        echo "Usage: $0 [all|agents|claude|opencode]"
+        echo "  all      - Install everything (default)"
+        echo "  agents   - Install only agent commands/skills (Claude + OpenCode)"
+        echo "  claude   - Install only Claude agent commands/skills"
+        echo "  opencode - Install only OpenCode agent commands"
+        exit 1
+        ;;
+esac
 
 echo "Installing dotfiles from $DOTFILES_DIR"
 echo
@@ -94,11 +170,6 @@ echo "  - ~/.ssh/id_ed_quantfiction (personal)"
 echo "  Set permissions: chmod 600 ~/.ssh/id_ed_*"
 echo
 
-# Claude plugins
-info "Setting up Claude Code..."
-mkdir -p "$HOME/.claude/plugins/cache/custom/global-skills"
-create_symlink "$DOTFILES_DIR/claude/plugins/global-skills" "$HOME/.claude/plugins/cache/custom/global-skills/1.0.0"
-
 # Claude hooks
 info "Setting up Claude hooks..."
 mkdir -p "$HOME/.claude/hooks"
@@ -122,23 +193,9 @@ if [ -f "$DOTFILES_DIR/claude/scripts/file-suggestion.sh" ]; then
     log "Installed file-suggestion.sh"
 fi
 
-# Claude commands
-info "Setting up Claude commands..."
-mkdir -p "$HOME/.claude/commands"
-if [ -d "$DOTFILES_DIR/claude/commands" ]; then
-    cp "$DOTFILES_DIR/claude/commands"/*.md "$HOME/.claude/commands/" 2>/dev/null && \
-        log "Installed Claude slash commands" || \
-        warn "No Claude commands to install"
-fi
-
-# OpenCode commands
-info "Setting up OpenCode commands..."
-mkdir -p "$HOME/.opencode/command"
-if [ -d "$DOTFILES_DIR/opencode/command" ]; then
-    cp "$DOTFILES_DIR/opencode/command"/*.md "$HOME/.opencode/command/" 2>/dev/null && \
-        log "Installed OpenCode slash commands" || \
-        warn "No OpenCode commands to install"
-fi
+# Agent commands and skills (Claude + OpenCode)
+install_claude_agents
+install_opencode_agents
 
 # Claude settings template
 if [ ! -f "$HOME/.claude/settings.json" ] && [ -f "$DOTFILES_DIR/claude/settings.json.template" ]; then
