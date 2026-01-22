@@ -15,11 +15,28 @@ Use after:
 
 ## Workflow
 
+### Step 0: Run schema validation
+
+Before importing, run the plan validator to ensure the BEADS.md file conforms to schema requirements:
+
+```bash
+pnpm validate:plans -- --path docs/plans/<project>
+```
+
+**This is a hard stop.** If validation fails, do NOT proceed to `bd create`. Fix the schema errors first, then re-run validation.
+
+**Expected output (success):**
+```
+✓ All plans validated successfully
+```
+
+**On failure:** The validator will report specific schema errors. Fix them in the BEADS.md file before continuing.
+
 ### Step 1: Validate the BEADS.md file
 
 Confirm the file exists and has the required sections:
 - Bead definitions (## ID: Title format)
-- Dependency script (bash script with `bd dep add` commands)
+- Dependency script (bash script with `bd dep add` commands; do not use `bd update --blocked-by`)
 
 ```bash
 # Check file exists
@@ -110,6 +127,10 @@ bd list -l <project-label> --json | jq 'length'
 User: /create-beads docs/plans/slack-integration/BEADS.md
 
 Agent: I'll import the beads and set up dependencies.
+
+Step 0: Running schema validation...
+$ pnpm validate:plans -- --path docs/plans/slack-integration
+✓ All plans validated successfully
 
 Step 1: Validating BEADS.md...
 Found 19 bead definitions.

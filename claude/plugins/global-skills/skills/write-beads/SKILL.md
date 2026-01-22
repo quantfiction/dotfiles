@@ -13,30 +13,12 @@ Convert a Technical Design Document (TDD) into a BEADS.md markdown file containi
 
 Use when you have:
 - A polished Technical Design Document from Stage 2
-- DESIGN_REVIEW.md with verdict `APPROVED_FOR_DECOMPOSITION`
 - Need to break down work for autonomous coding agents
 - Want to create trackable, independently-executable tasks
 
 ## Role
 
 You are a task decomposition engine preparing work for autonomous coding agents.
-
-## CRITICAL: Consume Review Findings First
-
-Before decomposing, check for `docs/plans/<project>/DESIGN_REVIEW.md`:
-
-1. **If DESIGN_REVIEW.md exists:**
-   - Extract all `should-fix` findings (ignore `waived` and `minor`)
-   - For each should-fix, identify which bead it maps to by matching:
-     - Section references (e.g., "section:6.3" → bead for that component)
-     - API endpoints (e.g., "api:GET /swarm/history" → API bead)
-     - File paths (e.g., "file:src/lib/auth.ts" → relevant bead)
-   - Add mapped should-fixes to the bead's **Implementation Notes** section
-   - For cross-cutting should-fixes that don't map to a single bead, create a **HARDEN-01: Hardening** bead
-
-2. **If no DESIGN_REVIEW.md exists:**
-   - Proceed with TDD-only decomposition
-   - Log warning: "No DESIGN_REVIEW.md found - should-fixes not incorporated"
 
 ## Bead definition
 
@@ -50,9 +32,10 @@ A bead is the smallest unit of work that:
 ## Rules
 
 - Prefer *more beads* over fewer
-- If a bead depends on a decision, create a separate **DECISION** bead
+- **DECISION gating**: If a bead depends on a decision that is not yet resolved, create a separate **DECISION** bead that BLOCKS the dependent beads. Unresolved decisions MUST NOT be left implicit.
 - Use dependencies to express ordering; do not assume strict sequence
 - Assume agents will not infer context beyond what is written
+- Include parallelism and confidence metadata where applicable
 
 ## Output Format
 
@@ -74,49 +57,88 @@ The output file MUST have these sections in order:
 
 ### Bead Format (bd-compatible)
 
-Each bead uses `## ` for the title (H2), and `### ` for sections (H3):
+Each bead MUST use an H2 title plus H3 metadata sections that `bd create -f` can reliably ingest.
 
 ```markdown
 ## {ID}: {Title}
 
 ### Priority
-P0
+P0|P1|P2
 
 ### Type
-task
+task|bug|feature|decision
 
 ### Labels
 {project-label}, {phase-label}
 
-### Description
+### Blocked by
+{ID}, {ID} (optional; informational only)
 
-**Context:**
+### Parallelism
+independent|sequential|parallel-safe
+(Optional. Hints for swarm orchestrator: can this run with other beads?)
+
+### Confidence
+high|medium|low
+(Optional. How confident is this specification? Low confidence = likely needs iteration)
+
+### Context
 Why this exists, what already exists, what this creates/modifies.
 
-**Specification:**
+### Specification
 Exact requirements, inputs, outputs, interface contracts, error handling.
 
-**Files:**
+### Files (optional but recommended)
 - Create: {filepaths}
 - Modify: {filepaths}
 - Reference: {filepaths}
 
-**Common Failure Modes:**
+### Common Failure Modes (optional)
 What implementers commonly get wrong.
 
 ### Acceptance Criteria
 - [ ] Specific verifiable condition
 - [ ] Passes: {test command}
-
-### Implementation Notes
-> **Should-fix from review:** (if any mapped to this bead)
-> - `design-review::type::anchor`: Description of what to address
 ```
 
 **CRITICAL FORMAT RULES**:
-1. Do NOT use `## ` (H2) anywhere inside the Description - use `**Bold:**` for sub-headers
-2. Do NOT include a `### Deps` or `### Dependencies` section - bd cannot resolve symbolic deps during batch creation
-3. Dependencies are added AFTER creation using `bd dep add`
+1. Do NOT use `## ` (H2) anywhere except bead titles - `bd create -f` treats EVERY H2 as a bead
+2. Do NOT add YAML frontmatter (`---` block at top) - the plan validator rejects it
+3. Do NOT rely on `**Blocked by:**` for bd dependencies (bd cannot resolve symbolic deps during batch creation)
+4. Dependencies are added AFTER creation using a runnable `bd dep add` script
+5. Do NOT use `bd update --blocked-by` (unsupported by bd CLI)
+
+**COMMON MISTAKES TO AVOID**:
+```markdown
+# WRONG - Will create unwanted beads and fail validation:
+---
+schemaVersion: 1
+artifactType: beads
+---
+
+# Project Name
+
+## Summary           <-- WRONG: H2 creates a bead named "Summary"
+## Dependency Graph  <-- WRONG: H2 creates a bead named "Dependency Graph"
+
+## CORE-01: Real bead
+...
+
+# CORRECT - Only beads use H2:
+# Project Name
+
+**Summary:** Brief description here.
+
+### Dependency Graph   <-- H3 is safe, not parsed as bead
+\`\`\`mermaid
+...
+\`\`\`
+
+---
+
+## CORE-01: Real bead  <-- Only beads get H2
+...
+```
 
 ### Dependency Script Section
 
@@ -169,7 +191,54 @@ Use category prefixes:
 - `INTEG-NN` - Integration work
 - `DOCS-NN` - Documentation
 - `CLEAN-NN` - Cleanup/refactoring
-- `DECISION-NN` - Decisions requiring input
+- `DECISION-NN` - Decisions requiring input (see DECISION Beads section)
+
+## DECISION Beads (Gating Mechanism)
+
+**CRITICAL**: Unresolved decisions MUST NOT be left implicit in implementation beads.
+
+When to create a DECISION bead:
+- Architecture choices not yet finalized (e.g., "use Redis vs DynamoDB")
+- API design decisions (e.g., "REST vs GraphQL for this endpoint")
+- Data model choices that affect multiple beads
+- Third-party service selection
+- Any "TBD" or "TODO: decide" in the TDD
+
+DECISION bead structure:
+```markdown
+## DECISION-NN: {Decision Title}
+
+### Priority
+P0 (decisions are always high priority - they block work)
+
+### Type
+decision
+
+### Labels
+{project-label}, decision-gate
+
+### Options
+1. **Option A**: Description, pros, cons
+2. **Option B**: Description, pros, cons
+3. **Option C**: Description, pros, cons
+
+### Recommendation
+Recommended option with rationale (if any)
+
+### Decision Needed By
+Who/what role needs to make this decision
+
+### Blocks
+List of bead IDs that cannot proceed until this is resolved:
+- CORE-02
+- API-01
+
+### Acceptance Criteria
+- [ ] Decision documented in TDD/ADR
+- [ ] Dependent beads updated with decision outcome
+```
+
+**Gating rule**: Any bead that references an unresolved decision MUST have that DECISION bead as a blocker. Agents CANNOT proceed with implementation until the DECISION bead is closed.
 
 ## Priority Guidelines
 
@@ -202,32 +271,35 @@ Assign phase labels based on category:
 
 Derived from [TECHNICAL_DESIGN.md](./TECHNICAL_DESIGN.md).
 
-## Dependency Graph
+### Dependency Graph
 
 \`\`\`mermaid
 graph TD
-    SETUP-01 --> CORE-01
+    SETUP-01 --> DECISION-01
+    DECISION-01 --> CORE-01
     CORE-01 --> API-01
     API-01 --> UI-01
 \`\`\`
 
-## Summary
+### Summary
 
-| ID | Title | Priority | Dependencies |
-|----|-------|----------|--------------|
-| SETUP-01 | Add provider constant | P0 | - |
-| CORE-01 | Implement client | P0 | SETUP-01 |
-| API-01 | Create endpoint | P1 | CORE-01 |
-| UI-01 | Build picker UI | P1 | API-01 |
+| ID | Title | Priority | Dependencies | Parallelism |
+|----|-------|----------|--------------|-------------|
+| SETUP-01 | Add provider constant | P0 | - | independent |
+| DECISION-01 | Choose caching strategy | P0 | SETUP-01 | - |
+| CORE-01 | Implement client | P0 | DECISION-01 | sequential |
+| API-01 | Create endpoint | P1 | CORE-01 | parallel-safe |
+| UI-01 | Build picker UI | P1 | API-01 | parallel-safe |
 
-## Dependency Commands
+### Dependency Commands
 
 After `bd create -f BEADS.md`, add dependencies:
 
 \`\`\`bash
 bd list -l my-project --json | jq -r '.[] | "\(.title | split(":")[0]): \(.id)"' | sort
 # Then for each dependency:
-# bd dep add <CORE-01-id> <SETUP-01-id>
+# bd dep add <DECISION-01-id> <SETUP-01-id>
+# bd dep add <CORE-01-id> <DECISION-01-id>
 # bd dep add <API-01-id> <CORE-01-id>
 # bd dep add <UI-01-id> <API-01-id>
 \`\`\`
@@ -245,20 +317,53 @@ task
 ### Labels
 my-project, phase-0
 
-### Description
+### Parallelism
+independent
 
-**Context:**
+### Confidence
+high
+
+### Context
 All providers must be declared in a central constant before use.
 
-**Specification:**
+### Specification
 Add `MY_PROVIDER: 'my_provider'` to the PROVIDERS object in `src/constants.ts`.
 
-**Files:**
+### Files
 - Modify: src/constants.ts
 
 ### Acceptance Criteria
 - [ ] PROVIDERS.MY_PROVIDER === 'my_provider'
 - [ ] Passes: pnpm typecheck
+
+## DECISION-01: Choose caching strategy
+
+### Priority
+P0
+
+### Type
+decision
+
+### Labels
+my-project, decision-gate
+
+### Options
+1. **Redis**: Fast, distributed, but requires infrastructure
+2. **In-memory LRU**: Simple, no external deps, but no persistence
+3. **SQLite**: Persistent, no infrastructure, but slower for high-throughput
+
+### Recommendation
+Redis is recommended for production scalability, but in-memory LRU is acceptable for MVP.
+
+### Decision Needed By
+Tech lead or architect
+
+### Blocks
+- CORE-01 (client implementation depends on caching choice)
+
+### Acceptance Criteria
+- [ ] Decision documented in TDD/ADR
+- [ ] Dependent beads updated with decision outcome
 
 ## CORE-01: Implement client
 
@@ -271,16 +376,24 @@ task
 ### Labels
 my-project, phase-1
 
-### Description
+### Blocked by
+DECISION-01
 
-**Context:**
+### Parallelism
+sequential
+
+### Confidence
+high
+
+### Context
 Need a typed client to interact with the external API.
 
-**Specification:**
+### Specification
 Create `src/lib/my-client.ts` with methods for list, get, create operations.
 Handle rate limiting with exponential backoff.
+Use the caching strategy chosen in DECISION-01.
 
-**Files:**
+### Files
 - Create: src/lib/my-client.ts
 - Reference: src/lib/other-client.ts
 
@@ -290,7 +403,7 @@ Handle rate limiting with exponential backoff.
 - [ ] Passes: pnpm typecheck
 ```
 
-## Add Dependencies
+### Add Dependencies
 
 After creating beads, run this script:
 
@@ -314,15 +427,19 @@ bd sync
 echo "Done!"
 \`\`\`
 
-## Verification Checklist
+### Verification Checklist
 
 Before finalizing, verify:
+- [ ] **No YAML frontmatter** - file starts with `# Title`, not `---`
+- [ ] **No H2 except beads** - Summary, Dependency Graph, etc. use H3 (`###`)
 - [ ] Every TDD requirement maps to ≥1 bead
 - [ ] No orphan beads (all map back to TDD)
 - [ ] Each bead has ONE responsibility
-- [ ] No `## ` headers inside Description sections
 - [ ] All dependencies listed in Deps section
 - [ ] Dependency commands section is complete
 - [ ] Labels include project name and phase
-- [ ] **All non-waived should-fixes mapped** to beads or HARDEN bead
-- [ ] **Cross-cutting should-fixes** have a dedicated HARDEN bead (if any)
+- [ ] **DECISION gating**: All unresolved decisions have DECISION beads
+- [ ] **DECISION gating**: All beads referencing unresolved decisions are blocked by the corresponding DECISION bead
+- [ ] **Parallelism metadata**: Beads that can run concurrently are marked `parallel-safe`
+- [ ] **Confidence metadata**: Low-confidence beads are identified for potential iteration
+- [ ] **Run validator**: `pnpm validate:plans --path docs/plans/<project>` passes

@@ -3,6 +3,8 @@ name: launch-swarm
 description: Launch a parallel agent swarm to work on beads with a specific label. Spawns agents with correct model, sends bead_swarm template, and confirms execution.
 ---
 
+> **DEPRECATED:** Use `/swarm-orchestrator` and `pnpm swarm` instead. See `docs/guides/planning-lifecycle.md` for the updated workflow.
+
 # Launch Swarm
 
 Launch multiple Claude Code agents in tmux panes to work on beads in parallel.
