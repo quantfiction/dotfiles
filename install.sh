@@ -7,7 +7,7 @@
 #   ./install.sh          # Install everything
 #   ./install.sh agents   # Install only agent commands/skills (Claude + OpenCode)
 #   ./install.sh claude   # Install only Claude agent commands/skills
-#   ./install.sh opencode # Install only OpenCode agent commands
+#   ./install.sh opencode # Install only OpenCode agent commands/skills
 #
 set -euo pipefail
 
@@ -125,7 +125,7 @@ install_claude_agents() {
         "$HOME/.claude/plugins/cache/custom/global-skills/1.0.0" "1.0.0"
 }
 
-# Install OpenCode agent commands
+# Install OpenCode agent commands and skills
 install_opencode_agents() {
     info "Setting up OpenCode commands..."
     mkdir -p "$HOME/.opencode/command"
@@ -133,6 +133,28 @@ install_opencode_agents() {
         cp "$DOTFILES_DIR/opencode/command"/*.md "$HOME/.opencode/command/" 2>/dev/null && \
             log "Installed OpenCode slash commands" || \
             warn "No OpenCode commands to install"
+    fi
+
+    # Install OpenCode skills (symlink each skill directory)
+    # OpenCode discovers skills from ~/.config/opencode/skills/<name>/SKILL.md
+    info "Setting up OpenCode skills..."
+    local skills_source="$DOTFILES_DIR/claude/plugins/global-skills/skills"
+    local skills_target="$HOME/.config/opencode/skills"
+    
+    if [ -d "$skills_source" ]; then
+        mkdir -p "$skills_target"
+        
+        # Symlink each skill directory individually
+        for skill_dir in "$skills_source"/*/; do
+            if [ -d "$skill_dir" ]; then
+                local skill_name
+                skill_name=$(basename "$skill_dir")
+                create_symlink "$skill_dir" "$skills_target/$skill_name"
+            fi
+        done
+        log "Installed OpenCode skills"
+    else
+        warn "No OpenCode skills found at $skills_source"
     fi
 }
 
@@ -158,7 +180,7 @@ case "$INSTALL_MODE" in
         exit 0
         ;;
     opencode)
-        echo "Installing OpenCode agent commands only..."
+        echo "Installing OpenCode agent commands and skills..."
         echo
         install_opencode_agents
         echo
@@ -174,7 +196,7 @@ case "$INSTALL_MODE" in
         echo "  all      - Install everything (default)"
         echo "  agents   - Install only agent commands/skills (Claude + OpenCode)"
         echo "  claude   - Install only Claude agent commands/skills"
-        echo "  opencode - Install only OpenCode agent commands"
+        echo "  opencode - Install only OpenCode agent commands/skills"
         exit 1
         ;;
 esac

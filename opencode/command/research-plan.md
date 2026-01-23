@@ -33,4 +33,4 @@ Create `docs/plans/<project>/RESEARCH_DOSSIER.md` with:
 - Track M: `/plan-polish` (lite schema)
 - Track L: `/plan-polish` (full schema)
 
-@.claude/skills/research-plan/SKILL.md
+Load the `research-plan` skill for detailed implementation guidance.
