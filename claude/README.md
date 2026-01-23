@@ -8,6 +8,7 @@ This directory contains Claude Code configuration files, hooks, scripts, and cus
 claude/
 ├── commands/
 │   ├── ask-questions.md        # Slash command: /ask-questions
+│   ├── bead-fix.md             # Slash command: /bead-fix
 │   ├── bead-review.md          # Slash command: /bead-review
 │   ├── create-beads.md         # Slash command: /create-beads
 │   ├── intake.md               # Slash command: /intake
@@ -57,6 +58,7 @@ User-friendly slash commands that invoke the global skills. These provide docume
 | `/review-design` | Review and critique technical designs |
 | `/write-beads` | Convert TDDs into atomic tasks (beads) |
 | `/bead-review` | QA/audit task decomposition |
+| `/bead-fix` | Apply fixes from review ledger to BEADS.md |
 | `/create-beads` | Import tasks into bd issue tracker |
 | `/launch-swarm` | Launch parallel agent swarm |
 | `/review` | General code review |
@@ -107,7 +109,7 @@ QA/adversarial audit of bead decomposition for autonomous agent execution. Uses 
 ### bead-fix
 Apply fixes from BEADS_LEDGER.md to BEADS.md. Use after bead-review identifies blockers or should-fixes.
 
-**Usage:** Invoked by `/bead-review` workflow
+**Usage:** `/bead-fix`
 
 ### create-beads
 Import BEADS.md files into bd issue tracker and set up dependencies.
@@ -147,6 +149,8 @@ Review → /review-design
 Tasks → /write-beads
      ↓
 QA → /bead-review
+     ↓
+Fix → /bead-fix (if issues found)
      ↓
 Import → /create-beads
      ↓

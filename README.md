@@ -8,7 +8,7 @@ Personal configuration files and development environment setup with integrated A
 - **Git config**: Multi-account setup with work/personal identities
 - **SSH config**: Host aliases for work and personal GitHub accounts
 - **Claude Code**:
-  - **10 slash commands**: /ask-questions, /plan-polish, /write-beads, /bead-review, /create-beads, /launch-swarm, /review, /intake, /review-design, /research-plan
+  - **11 slash commands**: /ask-questions, /intake, /plan-polish, /research-plan, /review-design, /write-beads, /bead-review, /bead-fix, /create-beads, /launch-swarm, /review
   - **12 global skills**: Complete workflow automation skills
   - **Git safety hooks**: Prevent destructive git/filesystem commands
   - **File suggestion script**: Custom fuzzy finder using rg + fzf
@@ -73,8 +73,9 @@ Install only specific components:
 ```
 dotfiles/
 ├── claude/
-│   ├── commands/                   # 10 slash commands
+│   ├── commands/                   # 11 slash commands
 │   │   ├── ask-questions.md
+│   │   ├── bead-fix.md
 │   │   ├── bead-review.md
 │   │   ├── create-beads.md
 │   │   ├── intake.md
@@ -220,7 +221,7 @@ This dotfiles repo includes custom Claude Code configuration for enhanced safety
 
 ### Slash Commands
 
-Ten easy-to-use slash commands available from any project:
+Eleven easy-to-use slash commands available from any project:
 
 | Command | Description |
 |---------|-------------|
@@ -231,6 +232,7 @@ Ten easy-to-use slash commands available from any project:
 | `/review-design` | Review and critique technical designs |
 | `/write-beads` | Convert TDDs into atomic tasks (beads) |
 | `/bead-review` | QA/audit task decomposition |
+| `/bead-fix` | Apply fixes from review ledger to BEADS.md |
 | `/create-beads` | Import tasks into bd issue tracker |
 | `/launch-swarm` | Launch parallel agent swarm for execution |
 | `/review` | General code review |
@@ -276,6 +278,8 @@ Review → /review-design
 Tasks → /write-beads
      ↓
 QA → /bead-review
+     ↓
+Fix → /bead-fix (if issues found)
      ↓
 Import → /create-beads
      ↓
