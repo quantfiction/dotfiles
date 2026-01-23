@@ -56,6 +56,56 @@ create_symlink() {
     log "Linked $target → $source"
 }
 
+# Register a plugin in installed_plugins.json
+register_plugin() {
+    local plugin_name="$1"
+    local marketplace="$2"
+    local install_path="$3"
+    local version="$4"
+    local plugins_file="$HOME/.claude/plugins/installed_plugins.json"
+    
+    # Create plugins directory if needed
+    mkdir -p "$HOME/.claude/plugins"
+    
+    # Create initial file if it doesn't exist
+    if [ ! -f "$plugins_file" ]; then
+        echo '{"version":2,"plugins":{}}' > "$plugins_file"
+    fi
+    
+    # Check if jq is available
+    if ! command -v jq &> /dev/null; then
+        warn "jq not found - cannot register plugin. Install jq and re-run."
+        return 1
+    fi
+    
+    local plugin_key="${plugin_name}@${marketplace}"
+    local timestamp
+    timestamp=$(date -u +"%Y-%m-%dT%H:%M:%S.000Z")
+    
+    # Add or update the plugin entry
+    local new_entry
+    new_entry=$(jq -n \
+        --arg scope "user" \
+        --arg path "$install_path" \
+        --arg ver "$version" \
+        --arg ts "$timestamp" \
+        '[{
+            "scope": $scope,
+            "installPath": $path,
+            "version": $ver,
+            "installedAt": $ts,
+            "lastUpdated": $ts,
+            "isLocal": true
+        }]')
+    
+    # Update the plugins file
+    jq --arg key "$plugin_key" --argjson entry "$new_entry" \
+        '.plugins[$key] = $entry' "$plugins_file" > "${plugins_file}.tmp" && \
+        mv "${plugins_file}.tmp" "$plugins_file"
+    
+    log "Registered plugin: $plugin_key"
+}
+
 # Install Claude agent commands and skills
 install_claude_agents() {
     info "Setting up Claude Code commands..."
@@ -69,6 +119,10 @@ install_claude_agents() {
     info "Setting up Claude Code skills..."
     mkdir -p "$HOME/.claude/plugins/cache/custom/global-skills"
     create_symlink "$DOTFILES_DIR/claude/plugins/global-skills" "$HOME/.claude/plugins/cache/custom/global-skills/1.0.0"
+    
+    # Register the plugin so Claude Code discovers it
+    register_plugin "global-skills" "custom" \
+        "$HOME/.claude/plugins/cache/custom/global-skills/1.0.0" "1.0.0"
 }
 
 # Install OpenCode agent commands
