@@ -10,9 +10,12 @@ claude/
 │   ├── ask-questions.md        # Slash command: /ask-questions
 │   ├── bead-review.md          # Slash command: /bead-review
 │   ├── create-beads.md         # Slash command: /create-beads
+│   ├── intake.md               # Slash command: /intake
 │   ├── launch-swarm.md         # Slash command: /launch-swarm
 │   ├── plan-polish.md          # Slash command: /plan-polish
+│   ├── research-plan.md        # Slash command: /research-plan
 │   ├── review.md               # Slash command: /review
+│   ├── review-design.md        # Slash command: /review-design
 │   └── write-beads.md          # Slash command: /write-beads
 ├── hooks/
 │   ├── git_safety_guard.sh     # Blocks destructive git commands
@@ -22,11 +25,17 @@ claude/
 │       ├── .claude-plugin/
 │       └── skills/
 │           ├── ask-questions-if-underspecified/
-│           ├── plan-polish/
-│           ├── write-beads/
+│           ├── bead-fix/
 │           ├── bead-review/
 │           ├── create-beads/
-│           └── launch-swarm/
+│           ├── intake/
+│           ├── launch-swarm/
+│           ├── plan-polish/
+│           ├── research-plan/
+│           ├── review/
+│           ├── review-design/
+│           ├── swarm-orchestrator/
+│           └── write-beads/
 ├── scripts/
 │   └── file-suggestion.sh      # Custom file fuzzy finder
 ├── settings.json.template      # Settings template (copy to ~/.claude/settings.json)
@@ -39,13 +48,18 @@ User-friendly slash commands that invoke the global skills. These provide docume
 
 ### Available Commands
 
-- `/ask-questions` - Clarify ambiguous requirements before implementing
-- `/plan-polish` - Convert rough plans to Technical Design Documents
-- `/write-beads` - Convert TDDs into atomic tasks
-- `/bead-review` - QA/audit task decomposition
-- `/create-beads` - Import tasks into bd issue tracker
-- `/launch-swarm` - Launch parallel agent swarm
-- `/review` - General code review
+| Command | Description |
+|---------|-------------|
+| `/ask-questions` | Clarify ambiguous requirements before implementing |
+| `/intake` | Route work deterministically via complexity scoring |
+| `/plan-polish` | Convert rough plans to Technical Design Documents |
+| `/research-plan` | Route plans through targeted research to gather verified facts |
+| `/review-design` | Review and critique technical designs |
+| `/write-beads` | Convert TDDs into atomic tasks (beads) |
+| `/bead-review` | QA/audit task decomposition |
+| `/create-beads` | Import tasks into bd issue tracker |
+| `/launch-swarm` | Launch parallel agent swarm |
+| `/review` | General code review |
 
 **Usage:** Just type the slash command in Claude Code, e.g., `/ask-questions`
 
@@ -53,17 +67,32 @@ The commands provide helpful documentation and examples of how to use each skill
 
 ## Global Skills
 
-Custom workflow and planning skills available from any repository:
+Custom workflow and planning skills available from any repository.
 
 ### ask-questions-if-underspecified
 Clarify requirements before implementing by detecting ambiguity and asking structured questions.
 
-**Usage:** `/ask-questions-if-underspecified`
+**Usage:** `/ask-questions`
+
+### intake
+Route incoming work to the appropriate track (S/M/L) based on complexity scoring and determine whether research is required before implementation.
+
+**Usage:** `/intake`
 
 ### plan-polish
 Convert rough plans into implementation-grade Technical Design Documents for autonomous agent execution.
 
 **Usage:** `/plan-polish`
+
+### research-plan
+Route rough plans through targeted or deep research to gather verified facts before design. Validates assumptions and fills knowledge gaps.
+
+**Usage:** `/research-plan`
+
+### review-design
+Review and critique technical designs, identifying potential issues, missing considerations, and areas for improvement.
+
+**Usage:** `/review-design`
 
 ### write-beads
 Convert Technical Design Documents into BEADS.md files with atomic implementation tasks.
@@ -71,9 +100,14 @@ Convert Technical Design Documents into BEADS.md files with atomic implementatio
 **Usage:** `/write-beads`
 
 ### bead-review
-QA/adversarial audit of bead decomposition for autonomous agent execution.
+QA/adversarial audit of bead decomposition for autonomous agent execution. Uses parallel sub-agents for comprehensive coverage.
 
 **Usage:** `/bead-review`
+
+### bead-fix
+Apply fixes from BEADS_LEDGER.md to BEADS.md. Use after bead-review identifies blockers or should-fixes.
+
+**Usage:** Invoked by `/bead-review` workflow
 
 ### create-beads
 Import BEADS.md files into bd issue tracker and set up dependencies.
@@ -84,6 +118,42 @@ Import BEADS.md files into bd issue tracker and set up dependencies.
 Launch parallel agent swarm to work on beads with specific labels.
 
 **Usage:** `/launch-swarm`
+
+### swarm-orchestrator
+Manages multi-agent coordination for parallel task execution. Handles agent spawning, monitoring, and task distribution.
+
+**Usage:** Invoked by `/launch-swarm` workflow
+
+### review
+General code review automation for pull requests and code changes.
+
+**Usage:** `/review`
+
+## Workflow Pipeline
+
+The skills support a structured development workflow:
+
+```
+Requirements → /intake
+     ↓
+Clarification → /ask-questions
+     ↓
+Research → /research-plan
+     ↓
+Design → /plan-polish
+     ↓
+Review → /review-design
+     ↓
+Tasks → /write-beads
+     ↓
+QA → /bead-review
+     ↓
+Import → /create-beads
+     ↓
+Execute → /launch-swarm
+     ↓
+Review → /review
+```
 
 ## Hooks
 
