@@ -160,7 +160,7 @@ cd repo
 git personal
 
 # Verify
-git whoami  # Shows: Quant Fiction / quantfiction1@protonmail.com
+git whoami  # Shows: Your Personal Name / your-personal@email.com
 ```
 
 **Work repos**:
@@ -173,7 +173,7 @@ cd repo
 git work
 
 # Verify
-git whoami  # Shows: Brian Blandin / brian@thetie.io
+git whoami  # Shows: Your Work Name / your-work@email.com
 ```
 
 ### What Happens If You Forget?

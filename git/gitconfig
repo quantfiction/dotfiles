@@ -21,10 +21,10 @@
 
 [alias]
 	# Set work identity in current repo
-	work = "!git config user.name 'Brian Blandin' && git config user.email 'brian@thetie.io' && echo 'Switched to work identity'"
+	work = "!git config user.name 'Your Work Name' && git config user.email 'your-work@email.com' && echo 'Switched to work identity'"
 
 	# Set personal identity in current repo
-	personal = "!git config user.name 'Quant Fiction' && git config user.email 'quantfiction1@protonmail.com' && echo 'Switched to personal identity'"
+	personal = "!git config user.name 'Your Personal Name' && git config user.email 'your-personal@email.com' && echo 'Switched to personal identity'"
 
 	# Check which identity is active (will error if not set)
 	whoami = "!git config user.name && git config user.email"
@@ -35,18 +35,3 @@
 	br = branch
 	ci = commit
 	unstage = reset HEAD --
-[safe]
-	directory = /home/ubuntu/actions-runner/_work/mindhive/mindhive
-	directory = /home/ubuntu/actions-runner/_work/mindhive/mindhive
-	directory = /home/ubuntu/actions-runner/_work/mindhive/mindhive
-	directory = /home/ubuntu/actions-runner/_work/mindhive/mindhive
-	directory = /home/ubuntu/actions-runner/_work/mindhive/mindhive
-	directory = /home/ubuntu/actions-runner/_work/mindhive/mindhive
-	directory = /home/ubuntu/actions-runner/_work/mindhive/mindhive
-	directory = /home/ubuntu/actions-runner/_work/mindhive/mindhive
-	directory = /home/ubuntu/actions-runner/_work/mindhive/mindhive
-	directory = /home/ubuntu/actions-runner/_work/mindhive/mindhive
-	directory = /home/ubuntu/actions-runner/_work/mindhive/mindhive
-	directory = /home/ubuntu/actions-runner/_work/mindhive/mindhive
-	directory = /home/ubuntu/actions-runner/_work/mindhive/mindhive
-	directory = /home/ubuntu/actions-runner/_work/mindhive/mindhive
