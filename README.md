@@ -1,19 +1,20 @@
 # Dotfiles
 
-Personal configuration files and development environment setup.
+Personal configuration files and development environment setup with integrated AI-assisted workflow automation.
 
 ## What's Included
 
-- **Shell configs**: bashrc, profile, zshrc
+- **Shell configs**: bashrc, profile, zshrc (Oh My Zsh with plugins)
 - **Git config**: Multi-account setup with work/personal identities
 - **SSH config**: Host aliases for work and personal GitHub accounts
 - **Claude Code**:
-  - **7 slash commands**: /ask-questions, /plan-polish, /write-beads, /bead-review, /create-beads, /launch-swarm, /review
-  - **6 global skills**: Complete workflow automation skills
+  - **10 slash commands**: /ask-questions, /plan-polish, /write-beads, /bead-review, /create-beads, /launch-swarm, /review, /intake, /review-design, /research-plan
+  - **12 global skills**: Complete workflow automation skills
   - **Git safety hooks**: Prevent destructive git/filesystem commands
   - **File suggestion script**: Custom fuzzy finder using rg + fzf
   - **Settings template**: Recommended Claude Code configuration
-- **Install script**: Automated symlink setup
+- **OpenCode**: Mirrored commands for OpenCode agent framework
+- **Install script**: Automated symlink setup with backup
 
 ## Quick Start
 
@@ -49,11 +50,22 @@ Personal configuration files and development environment setup.
 
 Just run steps 1, 2, 3, 4, and 5 above. The install script handles everything automatically.
 
+### Partial Installation
+
+Install only specific components:
+```bash
+./install.sh agents   # Only Claude and OpenCode configs
+./install.sh claude   # Only Claude Code configs
+./install.sh opencode # Only OpenCode configs
+```
+
 ## What the Install Script Does
 
 - Backs up existing config files (creates `.backup.<timestamp>` files)
 - Creates symlinks from `~/.bashrc`, `~/.gitconfig`, etc. to this repo
 - Sets up Claude plugins in the correct location
+- Registers global-skills plugin in `~/.claude/plugins/installed_plugins.json`
+- Installs OpenCode commands to `~/.config/opencode/`
 - Preserves your existing configs as backups before linking
 
 ## Directory Structure
@@ -61,13 +73,16 @@ Just run steps 1, 2, 3, 4, and 5 above. The install script handles everything au
 ```
 dotfiles/
 ├── claude/
-│   ├── commands/                   # 7 slash commands
+│   ├── commands/                   # 10 slash commands
 │   │   ├── ask-questions.md
 │   │   ├── bead-review.md
 │   │   ├── create-beads.md
+│   │   ├── intake.md
 │   │   ├── launch-swarm.md
 │   │   ├── plan-polish.md
+│   │   ├── research-plan.md
 │   │   ├── review.md
+│   │   ├── review-design.md
 │   │   └── write-beads.md
 │   ├── hooks/
 │   │   ├── git_safety_guard.sh     # Blocks destructive git commands
@@ -75,19 +90,37 @@ dotfiles/
 │   ├── plugins/
 │   │   └── global-skills/          # Custom global skills plugin
 │   │       ├── .claude-plugin/
-│   │       └── skills/             # 6 workflow skills
+│   │       └── skills/             # 12 workflow skills
 │   │           ├── ask-questions-if-underspecified/
-│   │           ├── plan-polish/
-│   │           ├── write-beads/
+│   │           ├── bead-fix/
 │   │           ├── bead-review/
 │   │           ├── create-beads/
-│   │           └── launch-swarm/
+│   │           ├── intake/
+│   │           ├── launch-swarm/
+│   │           ├── plan-polish/
+│   │           ├── research-plan/
+│   │           ├── review/
+│   │           ├── review-design/
+│   │           ├── swarm-orchestrator/
+│   │           └── write-beads/
 │   ├── scripts/
 │   │   └── file-suggestion.sh      # Custom file fuzzy finder
 │   ├── settings.json.template      # Claude Code settings template
 │   └── README.md                   # Claude Code documentation
 ├── git/
 │   └── gitconfig                   # Git configuration
+├── opencode/
+│   └── commands/                   # OpenCode command mirrors
+│       ├── ask-questions.md
+│       ├── bead-review.md
+│       ├── create-beads.md
+│       ├── intake.md
+│       ├── launch-swarm.md
+│       ├── plan-polish.md
+│       ├── research-plan.md
+│       ├── review.md
+│       ├── review-design.md
+│       └── write-beads.md
 ├── ssh/
 │   ├── config                      # SSH host aliases for multi-account
 │   ├── *.pub                       # Public SSH keys (private keys NOT included)
@@ -187,30 +220,69 @@ This dotfiles repo includes custom Claude Code configuration for enhanced safety
 
 ### Slash Commands
 
-Seven easy-to-use slash commands available from any project:
+Ten easy-to-use slash commands available from any project:
 
-- `/ask-questions` - Clarify ambiguous requirements before implementing
-- `/plan-polish` - Convert rough plans to Technical Design Documents
-- `/write-beads` - Convert TDDs into atomic tasks
-- `/bead-review` - QA/audit task decomposition
-- `/create-beads` - Import tasks into bd issue tracker
-- `/launch-swarm` - Launch parallel agent swarm
-- `/review` - General code review
+| Command | Description |
+|---------|-------------|
+| `/ask-questions` | Clarify ambiguous requirements before implementing |
+| `/intake` | Process and understand new project requirements |
+| `/plan-polish` | Convert rough plans to Technical Design Documents |
+| `/research-plan` | Route plans through targeted research to gather verified facts |
+| `/review-design` | Review and critique technical designs |
+| `/write-beads` | Convert TDDs into atomic tasks (beads) |
+| `/bead-review` | QA/audit task decomposition |
+| `/create-beads` | Import tasks into bd issue tracker |
+| `/launch-swarm` | Launch parallel agent swarm for execution |
+| `/review` | General code review |
 
 Just type the command in Claude Code (e.g., `/ask-questions`) to use it.
 
 ### Global Skills
 
-Six workflow and planning skills power the slash commands above. These can also be invoked directly:
+Twelve workflow and planning skills power the slash commands above:
 
-- `ask-questions-if-underspecified`
-- `plan-polish`
-- `write-beads`
-- `bead-review`
-- `create-beads`
-- `launch-swarm`
+| Skill | Purpose |
+|-------|---------|
+| `ask-questions-if-underspecified` | Prompts for clarification on ambiguous requests |
+| `intake` | Initial requirement gathering and analysis |
+| `plan-polish` | Refines rough ideas into structured TDDs |
+| `research-plan` | Validates plans with targeted research |
+| `review-design` | Technical design review and feedback |
+| `write-beads` | Converts designs to atomic, implementable tasks |
+| `bead-review` | Quality assurance for task decomposition |
+| `bead-fix` | Repairs issues with task definitions |
+| `create-beads` | Imports tasks to issue tracking system |
+| `launch-swarm` | Orchestrates parallel agent execution |
+| `swarm-orchestrator` | Manages multi-agent coordination |
+| `review` | Code review automation |
 
 See `claude/README.md` for detailed documentation of each skill.
+
+### Workflow Pipeline
+
+The skills support a structured development workflow:
+
+```
+Requirements → /intake
+     ↓
+Clarification → /ask-questions
+     ↓
+Research → /research-plan
+     ↓
+Design → /plan-polish
+     ↓
+Review → /review-design
+     ↓
+Tasks → /write-beads
+     ↓
+QA → /bead-review
+     ↓
+Import → /create-beads
+     ↓
+Execute → /launch-swarm
+     ↓
+Review → /review
+```
 
 ### Git Safety Hooks
 
@@ -255,6 +327,40 @@ The template includes:
 
 See `claude/README.md` for full details.
 
+## OpenCode Integration
+
+Commands are mirrored for the OpenCode agent framework in `opencode/commands/`. These are installed to `~/.config/opencode/` by the install script.
+
+Use the same slash commands in OpenCode:
+```
+/ask-questions
+/plan-polish
+/write-beads
+...
+```
+
+## Shell Configuration
+
+### Zsh (Default)
+
+Oh My Zsh with plugins:
+- git, node, npm, z
+- zsh-autosuggestions
+- zsh-syntax-highlighting
+
+Additional tools initialized:
+- **zoxide**: Smart directory jumping
+- **Atuin**: Enhanced command history
+- **Starship**: Cross-shell prompt
+
+### Aliases
+
+```bash
+cc='claude'           # Claude Code shortcut
+cod='codex'           # Codex shortcut
+gmi='gemini --yolo'   # Gemini shortcut
+```
+
 ## Adding New Configs
 
 1. **Copy config to dotfiles:**
@@ -283,15 +389,7 @@ See `claude/README.md` for full details.
    ./install.sh
    ```
 
-## Claude Global Skills
-
-Custom Claude Code skills in `claude/plugins/global-skills/`:
-
-- **ask-questions-if-underspecified**: Prompts for clarification when user requests are ambiguous
-
-To use: `/ask-questions-if-underspecified`
-
-### Adding More Claude Skills
+## Adding More Claude Skills
 
 1. Create skill directory:
    ```bash
@@ -311,10 +409,11 @@ To use: `/ask-questions-if-underspecified`
 ## Security Notes
 
 The `.gitignore` file prevents committing:
-- SSH keys and credentials
+- SSH private keys (all formats)
 - API keys and secrets
 - Shell history
 - `.env` files
+- Credentials and PEM files
 
 **Never commit sensitive data!** If you need machine-specific secrets, use:
 - Environment variables (not in dotfiles)
@@ -338,14 +437,19 @@ cd ~/dotfiles
 
 ### Claude plugin not loading
 
-1. Verify symlink exists:
+1. Verify plugin is registered:
+   ```bash
+   cat ~/.claude/plugins/installed_plugins.json | jq .
+   ```
+
+2. Verify symlink exists:
    ```bash
    ls -la ~/.claude/plugins/cache/custom/global-skills/1.0.0
    ```
 
-2. Restart Claude Code completely
+3. Restart Claude Code completely
 
-3. Check plugin structure:
+4. Check plugin structure:
    ```bash
    ls ~/dotfiles/claude/plugins/global-skills/
    ```
