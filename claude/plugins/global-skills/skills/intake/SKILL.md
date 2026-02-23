@@ -28,7 +28,7 @@ You are a Software Intake Analyst tasked with assessing work complexity and rout
 - **Do NOT start implementation** - intake is purely assessment
 - Apply the scoring rubric objectively; do not inflate or deflate scores
 - If overriding computed track, you MUST record the reason in Decisions Required
-- For Track M, you MUST check all research triggers and record which fired
+- For Track M, you MUST check all research triggers and review triggers and record which fired
 
 ## Scoring rubric (locked)
 
@@ -69,6 +69,19 @@ Compute base track score by summing:
 3. Related historical failures (via cass/cm) exist in same subsystem
 4. Decisions required that change interface/data/external behavior
 
+## Review mode determination (Track M only)
+
+Regardless of track score, if ANY of these conditions are true, `reviewMode` is set to `lite` and a design review is required before `/write-beads`:
+
+1. Auth/authz/secrets involved (any user-scoped data access)
+2. Multiple data-mutating API endpoints
+3. External API integration with untested contracts
+4. Database schema changes (migrations)
+
+If none fire, `reviewMode=none` and Track M proceeds directly to `/write-beads` after plan-polish.
+
+Track S always has `reviewMode=none`. Track L always has `reviewMode=full`.
+
 ## Output
 
 Create `docs/plans/<project>/INTAKE.md` with the following structure:
@@ -81,6 +94,7 @@ project: "<project-slug>"
 createdAt: "YYYY-MM-DD"
 track: S|M|L
 researchMode: none|targeted|deep
+reviewMode: none|lite|full
 sourcePlan: "docs/plans/<project-slug>/ROUGH.md"
 ---
 ```
@@ -96,6 +110,7 @@ sourcePlan: "docs/plans/<project-slug>/ROUGH.md"
 ## Routing Decision
 - Track: <S|M|L>
 - Research Mode: <none|targeted|deep>
+- Review Mode: <none|lite|full>
 - Next Commands:
   - <commands based on routing>
 
@@ -113,6 +128,13 @@ sourcePlan: "docs/plans/<project-slug>/ROUGH.md"
 - [ ] Suspected files/areas cannot be named
 - [ ] Related historical failures (via cass/cm) exist in same subsystem
 - [ ] Decisions required that change interface/data/external behavior
+
+## Review Triggers
+(Check all that fired. Track S: "Not applicable". Track L: always full review.)
+- [ ] Auth/authz/secrets involved
+- [ ] Multiple data-mutating API endpoints
+- [ ] External API integration with untested contracts
+- [ ] Database schema changes
 
 ## Scope Signals
 - In-scope:
@@ -135,10 +157,12 @@ sourcePlan: "docs/plans/<project-slug>/ROUGH.md"
 
 | Routing | Next Commands |
 |---------|---------------|
-| Track S, researchMode=none | `/write-beads` (direct to implementation) |
-| Track M, researchMode=none | `/plan-polish`, then `/write-beads` |
-| Track M, researchMode=targeted | `/research-plan`, then `/plan-polish` |
-| Track L, researchMode=deep | `/research-plan` (with deep flag) |
+| Track S | `/write-beads` (direct to implementation) |
+| Track M, researchMode=none, reviewMode=none | `/plan-polish`, then `/write-beads` |
+| Track M, researchMode=none, reviewMode=lite | `/plan-polish`, then `/review-design --lite`, then `/write-beads` |
+| Track M, researchMode=targeted, reviewMode=none | `/research-plan`, then `/plan-polish`, then `/write-beads` |
+| Track M, researchMode=targeted, reviewMode=lite | `/research-plan`, then `/plan-polish`, then `/review-design --lite`, then `/write-beads` |
+| Track L | `/research-plan` (deep), then `/plan-polish`, then `/review-design`, then `/write-beads` |
 
 ## Quality gate
 
@@ -146,7 +170,8 @@ Before finishing, confirm:
 - Scoring breakdown adds up correctly to Total
 - Track matches Score-to-Track mapping (or override is documented)
 - For Track M: all research triggers checked and researchMode matches
-- All frontmatter fields are populated
+- For Track M: all review triggers checked and reviewMode matches
+- All frontmatter fields are populated (including reviewMode)
 - Next Commands match the routing decision
 
 ## Common failure modes

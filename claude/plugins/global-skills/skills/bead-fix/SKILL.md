@@ -105,13 +105,23 @@ If any beads were split:
 2. Update existing commands that referenced the original bead
 3. Ensure graph remains acyclic
 
-### Step 6: Verify Fixes
+### Step 6: Verify Fixes (Anti-Regression)
 
 After applying all fixes, verify:
-- [ ] All beads have required metadata fields
+- [ ] All beads have required metadata fields (Parallelism, Confidence)
 - [ ] No syntax errors in markdown
 - [ ] Mermaid diagram is valid (if modified)
 - [ ] Dependency script matches diagram (if modified)
+- [ ] **Split beads**: If any bead was split, verify:
+  - New beads have all required metadata
+  - Dependencies FROM the original bead are reassigned to the correct split part
+  - Dependencies TO the original bead are updated (other beads that depended on it)
+  - The dependency script includes all new `bd dep add` commands
+- [ ] **Added context**: If context was added to a bead, verify:
+  - No speculative language introduced ("may", "might", "verify if")
+  - File paths referenced are real paths (not guesses)
+  - Import paths referenced actually export what's claimed
+- [ ] **Cross-reference check**: Re-read each modified bead and confirm it doesn't contradict adjacent beads
 
 ## Output
 

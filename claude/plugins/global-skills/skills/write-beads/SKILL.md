@@ -37,6 +37,16 @@ A bead is the smallest unit of work that:
 - Assume agents will not infer context beyond what is written
 - Include parallelism and confidence metadata where applicable
 
+## Context Verification Rules
+
+Before writing a bead's Context and Specification sections, verify the following. If you cannot verify, mark with UNVERIFIED.
+
+1. **File paths**: Every file in the Files section must be a real path you have confirmed exists (for Modify/Reference) or a path in an existing directory (for Create). Do not write "find X in src/" — write the exact path.
+2. **Import paths**: If a bead says "import X from Y", verify that Y actually exports X. If unverifiable, mark UNVERIFIED.
+3. **Function references**: If a bead references a function from another module, confirm it exists and note its signature. Do not use speculative language ("may reuse", "might need").
+4. **Line numbers**: When referencing specific locations in existing files, include line numbers or anchoring context (function name, class name).
+5. **No investigation deferred to implementation**: Phrases like "verify if file exists", "check which export to use", "find the right component" are NOT acceptable. The planning phase must resolve these.
+
 ## Output Format
 
 Output a SINGLE markdown file (`BEADS.md`) that can be directly imported into bd:
@@ -75,12 +85,12 @@ task|bug|feature|decision
 {ID}, {ID} (optional; informational only)
 
 ### Parallelism
-independent|sequential|parallel-safe
+parallelizable|requires-sequence|decision-gated
 (Optional. Hints for swarm orchestrator: can this run with other beads?)
 
 ### Confidence
-high|medium|low
-(Optional. How confident is this specification? Low confidence = likely needs iteration)
+verified|assumed|unverified
+(Optional. How confident is this specification? Unverified = likely needs iteration)
 
 ### Context
 Why this exists, what already exists, what this creates/modifies.
@@ -285,11 +295,11 @@ graph TD
 
 | ID | Title | Priority | Dependencies | Parallelism |
 |----|-------|----------|--------------|-------------|
-| SETUP-01 | Add provider constant | P0 | - | independent |
-| DECISION-01 | Choose caching strategy | P0 | SETUP-01 | - |
-| CORE-01 | Implement client | P0 | DECISION-01 | sequential |
-| API-01 | Create endpoint | P1 | CORE-01 | parallel-safe |
-| UI-01 | Build picker UI | P1 | API-01 | parallel-safe |
+| SETUP-01 | Add provider constant | P0 | - | parallelizable |
+| DECISION-01 | Choose caching strategy | P0 | SETUP-01 | decision-gated |
+| CORE-01 | Implement client | P0 | DECISION-01 | requires-sequence |
+| API-01 | Create endpoint | P1 | CORE-01 | parallelizable |
+| UI-01 | Build picker UI | P1 | API-01 | parallelizable |
 
 ### Dependency Commands
 
@@ -318,10 +328,10 @@ task
 my-project, phase-0
 
 ### Parallelism
-independent
+parallelizable
 
 ### Confidence
-high
+verified
 
 ### Context
 All providers must be declared in a central constant before use.
@@ -380,10 +390,10 @@ my-project, phase-1
 DECISION-01
 
 ### Parallelism
-sequential
+requires-sequence
 
 ### Confidence
-high
+verified
 
 ### Context
 Need a typed client to interact with the external API.
@@ -440,6 +450,12 @@ Before finalizing, verify:
 - [ ] Labels include project name and phase
 - [ ] **DECISION gating**: All unresolved decisions have DECISION beads
 - [ ] **DECISION gating**: All beads referencing unresolved decisions are blocked by the corresponding DECISION bead
-- [ ] **Parallelism metadata**: Beads that can run concurrently are marked `parallel-safe`
-- [ ] **Confidence metadata**: Low-confidence beads are identified for potential iteration
+- [ ] **Parallelism metadata**: Beads that can run concurrently are marked `parallelizable`
+- [ ] **Confidence metadata**: Unverified beads are identified for potential iteration
+- [ ] **No speculative references**: No "may", "might", "verify if", "find the" in Context/Specification
+- [ ] **All file paths verified**: Every Modify/Reference path confirmed to exist
+- [ ] **Coverage matrix produced**: Before finalizing, create a TDD-to-bead mapping table:
+  | TDD Section/Requirement | Covered by Bead(s) | Status |
+  |---|---|---|
+  This table should appear as an H3 section (`### Coverage Matrix`) after the Summary Tables.
 - [ ] **Run validator**: `pnpm validate:plans --path docs/plans/<project>` passes

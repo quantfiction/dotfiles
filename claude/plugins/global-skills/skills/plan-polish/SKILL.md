@@ -86,6 +86,31 @@ For each boundary between components:
 - Error propagation strategy
 - Logging/observability needs
 
+### V6. Security & Authorization Audit
+For each data-accessing component:
+- Who can call this? Is authentication required?
+- Does every query filter by user_id / tenant_id?
+- Can user A access user B's data? (IDOR check)
+- Are inputs validated at the API boundary? (types, ranges, enums)
+- Are secrets/PII excluded from error messages and logs?
+- For rate limiting: is there a cleanup/eviction strategy?
+
+### V7. Concurrency & Data Integrity Audit
+For each multi-step operation:
+- Is it wrapped in a transaction? If not, why?
+- What happens if two requests hit this concurrently?
+- Are shared resources protected by locks? Show lock scope in pseudocode
+- For database operations: specify connection isolation (shared vs per-thread)
+- For timeout/retry chains: compute total worst-case duration and verify it fits within budget
+
+### Database Migration Checklist (when applicable)
+For each migration/schema change:
+- UP migration SQL specified
+- DOWN/rollback migration SQL specified
+- Indexes specified for all query patterns (check WHERE clauses)
+- Unique constraints specified where deduplication is needed
+- Data backfill strategy if migrating existing data
+
 ## Output: TECHNICAL_DESIGN.md
 
 Create `docs/plans/<project>/TECHNICAL_DESIGN.md` with YAML frontmatter:
@@ -241,6 +266,9 @@ Before finishing, confirm:
 - [ ] At least 3 best-practice/pitfall bullets in:
   - Context & Constraints (lite schema)
   - Operational Concerns (full schema)
+- [ ] Every data-accessing endpoint specifies auth requirements and user-scoping
+- [ ] **Type consistency**: Every function/method signature mentioned in Component Design matches its usage elsewhere in the document. Return types, parameter types, and error types are consistent across all sections.
+- [ ] **API boundary validation**: Every endpoint specifies input validation schema (types, ranges, required vs optional). "Validates at boundary" without a concrete schema is not acceptable.
 
 ### Research integration (when researchMode != none)
 - [ ] All Verified Facts from RESEARCH_DOSSIER.md are incorporated
@@ -249,6 +277,7 @@ Before finishing, confirm:
 
 ## Next Steps
 
-After TECHNICAL_DESIGN.md is complete:
-- **Track M**: Proceed to `/write-beads`
-- **Track L**: Proceed to `/review-design` first, then `/write-beads` after approval
+After TECHNICAL_DESIGN.md is complete, check `reviewMode` from INTAKE.md:
+- **Track M, reviewMode=none**: Proceed to `/write-beads`
+- **Track M, reviewMode=lite**: Proceed to `/review-design --lite`, then `/write-beads` after approval
+- **Track L**: Proceed to `/review-design` (full), then `/write-beads` after approval

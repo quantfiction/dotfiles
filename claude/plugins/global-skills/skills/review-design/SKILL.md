@@ -1,18 +1,30 @@
 ---
 name: review-design
-description: Multi-perspective design review with parallel reviewers and explicit revise loop (Track L)
+description: Multi-perspective design review with parallel reviewers and explicit revise loop (Track L full, Track M lite)
 ---
 
 # Design Review Workflow
 
-Multi-perspective design review of Technical Design Documents (TDDs) with parallel reviewers and an explicit revise loop. This is a required gate before proceeding to `/write-beads` for Track L work.
+Multi-perspective design review of Technical Design Documents (TDDs) with parallel reviewers and an explicit revise loop. Required for Track L (full review) and Track M when review triggers fire (lite review).
 
 ## When to use
 
 Use when you have:
 - A polished Technical Design Document from `/plan-polish` (Stage 2)
-- Track L work that requires comprehensive design review before decomposition
+- Track L work (full review) or Track M work with `reviewMode: lite` from intake
 - Need to gate design quality before creating implementation beads
+
+## Review Modes
+
+### Full Review (Track L - default)
+All 4 reviewer perspectives (Security, Performance, API Design, Domain). Required for Track L.
+
+### Lite Review (Track M with review triggers)
+2 reviewer perspectives only: **Security Reviewer** + **API Design Reviewer**. These catch the two highest-frequency issue categories (security gaps in 100% of reviewed plans, API/type issues in 87%). Use when intake sets `reviewMode: lite`.
+
+Invoke with: `/review-design --lite`
+
+Lite review uses the same finding format, classification system, convergence rules, and anti-compounding guardrails as full review. The only difference is fewer reviewer perspectives.
 
 ## Position in Planning Lifecycle
 
@@ -34,9 +46,11 @@ Stage 6: /create-beads (import to bd)
 
 You are a Review Synthesizer coordinating multiple specialized reviewers. You spawn parallel reviewers, consolidate their findings, and produce a verdict that gates progression to `/write-beads`.
 
-## Required Reviewers
+## Reviewers
 
-Each reviewer operates as an independent perspective. Run ALL reviewers in parallel.
+Each reviewer operates as an independent perspective. Run all applicable reviewers in parallel.
+
+### Always Required (both lite and full review)
 
 ### 1. Security Reviewer
 
@@ -50,19 +64,7 @@ Each reviewer operates as an independent perspective. Run ALL reviewers in paral
 
 **Output:** Findings with severity and revision instructions anchored to TDD sections.
 
-### 2. Performance Reviewer
-
-**Focus areas:**
-- N+1 query patterns
-- Missing indexes or caching strategies
-- Resource bottlenecks (CPU, memory, I/O)
-- Scalability concerns
-- Timeout and retry policies
-- Async/sync operation choices
-
-**Output:** Findings with severity and revision instructions anchored to TDD sections.
-
-### 3. API Design Reviewer
+### 2. API Design Reviewer
 
 **Focus areas:**
 - REST/GraphQL best practices
@@ -75,6 +77,20 @@ Each reviewer operates as an independent perspective. Run ALL reviewers in paral
 
 **Output:** Findings with severity and revision instructions anchored to TDD sections.
 
+### Full Review Only (Track L)
+
+### 3. Performance Reviewer
+
+**Focus areas:**
+- N+1 query patterns
+- Missing indexes or caching strategies
+- Resource bottlenecks (CPU, memory, I/O)
+- Scalability concerns
+- Timeout and retry policies
+- Async/sync operation choices
+
+**Output:** Findings with severity and revision instructions anchored to TDD sections.
+
 ### 4. Domain Reviewer(s)
 
 **Inferred from TDD content.** Examples:
@@ -84,7 +100,7 @@ Each reviewer operates as an independent perspective. Run ALL reviewers in paral
 - UI/UX components → Accessibility Reviewer
 - ML/AI features → ML Ops Reviewer
 
-**Selection criteria:** Analyze TDD to identify domain-specific concerns not covered by the three mandatory reviewers.
+**Selection criteria:** Analyze TDD to identify domain-specific concerns not covered by the mandatory reviewers.
 
 **Output:** Findings with severity and revision instructions anchored to TDD sections.
 
@@ -312,7 +328,7 @@ After generating DESIGN_REVIEW.md, update the ledger:
 
 | Failure Mode | Prevention |
 |--------------|------------|
-| Missing reviewer perspective | Always run all 4 reviewer types (3 mandatory + domain-inferred) |
+| Missing reviewer perspective | Run all required reviewers: 2 for lite (Security + API Design), 4 for full (+ Performance + Domain) |
 | Verdict set to APPROVED despite unresolved blockers | Synthesis rule: ANY blocker → REVISE_AND_RESUBMIT |
 | Required Revisions not anchored to specific TDD sections | All revision instructions must cite exact section headings |
 | Not consuming previous ledger | First step: check if DESIGN_LEDGER.md exists |
@@ -332,7 +348,7 @@ If verdict is `REVISE_AND_RESUBMIT`:
 
 Before finalizing the review:
 
-- [ ] All 4 reviewer perspectives provided (3 mandatory + domain)
+- [ ] All required reviewer perspectives provided (2 for lite, 4 for full)
 - [ ] Every finding has valid IssueId with proper anchor
 - [ ] Every blocker cites anchored evidence
 - [ ] Verdict correctly reflects blocker/regression count
