@@ -17,10 +17,10 @@ Use when you have:
 ## Review Modes
 
 ### Full Review (Track L - default)
-All 4 reviewer perspectives (Security, Performance, API Design, Domain). Required for Track L.
+All 5 reviewer perspectives (Security, API Design, Impact, Performance, Domain). Required for Track L.
 
 ### Lite Review (Track M with review triggers)
-2 reviewer perspectives only: **Security Reviewer** + **API Design Reviewer**. These catch the two highest-frequency issue categories (security gaps in 100% of reviewed plans, API/type issues in 87%). Use when intake sets `reviewMode: lite`.
+3 reviewer perspectives: **Security Reviewer** + **API Design Reviewer** + **Impact Reviewer**. The impact reviewer is always included because unverified downstream assumptions are the most common source of production breakage. Use when intake sets `reviewMode: lite`.
 
 Invoke with: `/review-design --lite`
 
@@ -50,7 +50,7 @@ You are a Review Synthesizer coordinating multiple specialized reviewers. You sp
 
 Each reviewer operates as an independent perspective. Run all applicable reviewers in parallel.
 
-### Always Required (both lite and full review)
+### Always Required (all review modes: lite and full)
 
 ### 1. Security Reviewer
 
@@ -77,9 +77,22 @@ Each reviewer operates as an independent perspective. Run all applicable reviewe
 
 **Output:** Findings with severity and revision instructions anchored to TDD sections.
 
+### 3. Impact Reviewer
+
+**Focus areas:**
+- For every interface/model/contract changed or deleted: trace ALL consumers in the codebase
+- Verify the TDD accounts for each consumer's migration path
+- Check that "X is unaffected" claims are actually true
+- Identify downstream files that import/reference changed interfaces but aren't mentioned in the TDD
+- Verify type annotations, field access patterns, and method calls at each consumer site
+
+**Output:** Findings with severity and revision instructions. Any consumer of a changed/deleted interface that is not accounted for in the TDD is a **blocker**. Incomplete or incorrect adaptation plans are **should-fix**.
+
+**Why this reviewer exists:** TDDs frequently claim downstream components are "unaffected" without verifying it. This reviewer independently traces interface consumers to catch gaps before implementation begins.
+
 ### Full Review Only (Track L)
 
-### 3. Performance Reviewer
+### 4. Performance Reviewer
 
 **Focus areas:**
 - N+1 query patterns
@@ -91,7 +104,7 @@ Each reviewer operates as an independent perspective. Run all applicable reviewe
 
 **Output:** Findings with severity and revision instructions anchored to TDD sections.
 
-### 4. Domain Reviewer(s)
+### 5. Domain Reviewer(s)
 
 **Inferred from TDD content.** Examples:
 - Database schema complexity → Database Reviewer
@@ -328,7 +341,7 @@ After generating DESIGN_REVIEW.md, update the ledger:
 
 | Failure Mode | Prevention |
 |--------------|------------|
-| Missing reviewer perspective | Run all required reviewers: 2 for lite (Security + API Design), 4 for full (+ Performance + Domain) |
+| Missing reviewer perspective | Run all required reviewers: 3 for lite (Security + API Design + Impact), 5 for full (+ Performance + Domain) |
 | Verdict set to APPROVED despite unresolved blockers | Synthesis rule: ANY blocker → REVISE_AND_RESUBMIT |
 | Required Revisions not anchored to specific TDD sections | All revision instructions must cite exact section headings |
 | Not consuming previous ledger | First step: check if DESIGN_LEDGER.md exists |
@@ -348,7 +361,7 @@ If verdict is `REVISE_AND_RESUBMIT`:
 
 Before finalizing the review:
 
-- [ ] All required reviewer perspectives provided (2 for lite, 4 for full)
+- [ ] All required reviewer perspectives provided (3 for lite, 5 for full)
 - [ ] Every finding has valid IssueId with proper anchor
 - [ ] Every blocker cites anchored evidence
 - [ ] Verdict correctly reflects blocker/regression count

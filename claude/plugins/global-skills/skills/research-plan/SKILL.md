@@ -31,7 +31,7 @@ You are a research coordinator spawning specialized sub-agents to gather evidenc
 
 ## Sub-agent Responsibilities
 
-1. **Codebase Analyst** - Existing patterns, similar implementations, helper functions, test patterns
+1. **Codebase Analyst** - Existing patterns, similar implementations, helper functions, test patterns. **MUST also verify the ROUGH plan's assumptions**: trace all consumers of interfaces being changed/deleted, verify "X is unaffected" claims, and report any consumers the plan doesn't account for.
 2. **API/SDK Researcher** - External API contracts, SDK documentation, authentication flows
 3. **Learnings Retriever** - Past decisions, ADRs, postmortems, relevant issues
 4. **Best Practices Scout** (deep only) - Industry standards, security guidelines, performance patterns
@@ -64,12 +64,13 @@ sourceIntake: docs/plans/<project>/INTAKE.md
 
 ### Required Sections
 
-1. **Verified Facts** - Facts with sources, grouped by category
-2. **Repo Integration Findings** - Files to create/modify, patterns to follow, available helpers
-3. **External APIs / Services** - Contracts (verified or UNVERIFIED), auth requirements
-4. **Version & Dependency Notes** - Compatibility concerns, required upgrades
-5. **Known Unknowns** - UNVERIFIED items with specific verification steps
-6. **Decisions Required** - Conflicts or ambiguities surfaced during research
+1. **ROUGH Assumption Audit** - For each assumption from INTAKE.md's verification table: grep results, consumer lists, and verdict (confirmed/contradicted/nuanced). If the ROUGH claims "X is unaffected," list every file that consumes X. **This section is mandatory and must be completed before other sections.** If INTAKE.md has no assumption verification table, the codebase analyst must identify and verify the ROUGH's 3-5 most load-bearing assumptions independently.
+2. **Verified Facts** - Facts with sources, grouped by category
+3. **Repo Integration Findings** - Files to create/modify, patterns to follow, available helpers. Must incorporate findings from the assumption audit — if the audit found consumers the ROUGH missed, they must appear here.
+4. **External APIs / Services** - Contracts (verified or UNVERIFIED), auth requirements
+5. **Version & Dependency Notes** - Compatibility concerns, required upgrades
+6. **Known Unknowns** - UNVERIFIED items with specific verification steps
+7. **Decisions Required** - Conflicts or ambiguities surfaced during research
 
 ## Convergence Rules
 

@@ -19,18 +19,30 @@ Instead of simulating research perspectives internally, dispatch them as real pa
 
 ### Targeted Research (Track M — 3 agents)
 
+Build the codebase-analyst brief from INTAKE.md's Assumption Verification table. For each assumption (especially contradicted or unchecked ones), include a specific verification task. For any deleted/replaced interfaces, include "grep for all consumers of <InterfaceName> and list every file."
+
 ```
 subagent parallel:
-  - codebase-analyst: "Analyze the codebase for patterns, similar implementations, helpers, and conventions relevant to: <brief description from INTAKE.md>. Focus on: <research triggers from INTAKE.md>."
+  - codebase-analyst: "Analyze the codebase for: <brief description from INTAKE.md>.
+
+    PRIORITY TASK — Verify ROUGH plan assumptions:
+    <For each assumption from INTAKE.md's verification table, list it here with a specific grep/trace task. Example:>
+    - ROUGH claims 'findings/synthesis only consume ResultSchema, not query AST'. Verify: grep for every file that imports/references <changed interface>. List each consumer and what fields/methods it uses.
+    - ROUGH claims 'only files A, B, C need changes'. Verify: search for all imports of <deleted module>. Report any files not listed in the ROUGH.
+    <End of assumption tasks>
+
+    Also analyze: existing patterns, helpers, test conventions relevant to the plan. Focus on: <research triggers from INTAKE.md>."
   - api-researcher: "Research external APIs and SDKs needed for: <brief description from INTAKE.md>. Verify contracts, auth flows, rate limits. Focus on: <research triggers from INTAKE.md>."
   - learnings-retriever: "Search the project's history for past decisions, ADRs, postmortems, and known pitfalls relevant to: <brief description from INTAKE.md>. Focus on: <research triggers from INTAKE.md>."
 ```
 
 ### Deep Research (Track L — 5 agents)
 
+Same as targeted, with the same assumption-verification priority task for the codebase-analyst, plus two additional agents:
+
 ```
 subagent parallel:
-  - codebase-analyst: "Analyze the codebase for patterns, similar implementations, helpers, and conventions relevant to: <brief description from INTAKE.md>. Focus on: <research triggers from INTAKE.md>."
+  - codebase-analyst: "<same brief as targeted, including assumption verification tasks>"
   - api-researcher: "Research external APIs and SDKs needed for: <brief description from INTAKE.md>. Verify contracts, auth flows, rate limits. Focus on: <research triggers from INTAKE.md>."
   - learnings-retriever: "Search the project's history for past decisions, ADRs, postmortems, and known pitfalls relevant to: <brief description from INTAKE.md>. Focus on: <research triggers from INTAKE.md>."
   - best-practices-scout: "Research industry standards, security guidelines, and proven patterns for: <brief description from INTAKE.md>. Focus on: <research triggers from INTAKE.md>."

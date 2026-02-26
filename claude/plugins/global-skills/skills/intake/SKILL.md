@@ -26,9 +26,35 @@ You are a Software Intake Analyst tasked with assessing work complexity and rout
 ## Critical constraints
 
 - **Do NOT start implementation** - intake is purely assessment
+- **Do NOT trust the ROUGH plan's claims** - it is an unverified draft; spot-check before scoring
 - Apply the scoring rubric objectively; do not inflate or deflate scores
 - If overriding computed track, you MUST record the reason in Decisions Required
 - For Track M, you MUST check all research triggers and review triggers and record which fired
+
+## Assumption verification (required before scoring)
+
+The ROUGH plan is an unverified draft. Before scoring, you MUST:
+
+1. **List the plan's key assumptions** — every claim about what is/isn't
+   affected, what can safely change, what downstream consumers exist, what
+   interfaces are preserved. Extract 3-5 of the most load-bearing
+   assumptions from the ROUGH.
+
+2. **Spot-check assumptions against the codebase** — use grep/find to verify
+   at least 3 assumptions. For "X is unaffected" claims, grep for consumers
+   of the changed interfaces. For "only files A, B, C need changes" claims,
+   search for imports/references to the things being modified. Record what
+   you found, including consumer counts.
+
+3. **Record results in the output** — each assumption gets a status:
+   `verified`, `contradicted`, or `unchecked`. Contradicted assumptions
+   MUST increase the Ambiguity score. Unchecked assumptions with high
+   potential impact MUST be flagged as research triggers.
+
+If the plan proposes deleting or replacing an interface/model/contract,
+you MUST grep for all consumers of that interface and record the count.
+A plan that claims "downstream is unaffected" while 10+ files import the
+thing being deleted has contradicted assumptions, not zero ambiguity.
 
 ## Scoring rubric (locked)
 
@@ -49,6 +75,10 @@ Compute base track score by summing:
 | | +1 | Production-critical external integration |
 | Ambiguity | +1 | Success criteria unclear |
 | | +1 | Repo integration points unknown |
+| | +1 | Assumption spot-checks contradicted ROUGH claims |
+| Change surface | +2 | Replaces/deletes interfaces consumed by 10+ files |
+| | +1 | Replaces/deletes interfaces consumed by 3-9 files |
+| | +0 | New code only, or interfaces consumed by ≤2 files |
 
 **Score to Track mapping:**
 - 0-1 points: Track S (Small)
@@ -68,6 +98,8 @@ Compute base track score by summing:
 2. Suspected files/areas cannot be named
 3. Related historical failures (via cass/cm) exist in same subsystem
 4. Decisions required that change interface/data/external behavior
+5. Assumption spot-checks found contradictions or left high-impact claims unchecked
+6. Plan deletes/replaces code and claims downstream consumers are unaffected (must verify all consumers)
 
 ## Review mode determination (Track M only)
 
@@ -77,6 +109,7 @@ Regardless of track score, if ANY of these conditions are true, `reviewMode` is 
 2. Multiple data-mutating API endpoints
 3. External API integration with untested contracts
 4. Database schema changes (migrations)
+5. Plan replaces/deletes interfaces consumed by 3+ files (change surface ≥ 1)
 
 If none fire, `reviewMode=none` and Track M proceeds directly to `/write-beads` after plan-polish.
 
@@ -114,12 +147,25 @@ sourcePlan: "docs/plans/<project-slug>/ROUGH.md"
 - Next Commands:
   - <commands based on routing>
 
+## Assumption Verification
+(List 3-5 key assumptions from the ROUGH. Record spot-check results.)
+
+| # | Assumption | Spot-check method | Result | Status |
+|---|-----------|-------------------|--------|--------|
+| 1 | <claim from ROUGH> | <grep/find command or inspection> | <what was found> | verified/contradicted/unchecked |
+| 2 | ... | ... | ... | ... |
+| 3 | ... | ... | ... | ... |
+
+Consumer counts for deleted/replaced interfaces:
+- <InterfaceName>: <N> files import/reference it (list key consumers)
+
 ## Scoring Breakdown
-- Scope breadth: <0|1|2> points
-- Data / migrations: <0|1|3> points
-- Workflow complexity: <0|1|2> points
-- User-facing risk: <0|1|2> points
-- Ambiguity: <0|1|2> points
+- Scope breadth: <0|1|2> points — <justification>
+- Data / migrations: <0|1|3> points — <justification>
+- Workflow complexity: <0|1|2> points — <justification>
+- User-facing risk: <0|1|2> points — <justification>
+- Ambiguity: <0|1|2|3> points — <justification, cite spot-check results>
+- Change surface: <0|1|2> points — <justification, cite consumer counts>
 - Total: <number>
 
 ## Research Triggers
@@ -128,6 +174,8 @@ sourcePlan: "docs/plans/<project-slug>/ROUGH.md"
 - [ ] Suspected files/areas cannot be named
 - [ ] Related historical failures (via cass/cm) exist in same subsystem
 - [ ] Decisions required that change interface/data/external behavior
+- [ ] Assumption spot-checks found contradictions or left high-impact claims unchecked
+- [ ] Plan deletes/replaces code and claims downstream consumers are unaffected
 
 ## Review Triggers
 (Check all that fired. Track S: "Not applicable". Track L: always full review.)
@@ -135,6 +183,7 @@ sourcePlan: "docs/plans/<project-slug>/ROUGH.md"
 - [ ] Multiple data-mutating API endpoints
 - [ ] External API integration with untested contracts
 - [ ] Database schema changes
+- [ ] Plan replaces/deletes interfaces consumed by 3+ files
 
 ## Scope Signals
 - In-scope:
@@ -167,6 +216,9 @@ sourcePlan: "docs/plans/<project-slug>/ROUGH.md"
 ## Quality gate
 
 Before finishing, confirm:
+- Assumption verification table has at least 3 entries with spot-check results
+- No assumption is marked "contradicted" while Ambiguity scores 0
+- Consumer counts are recorded for any deleted/replaced interfaces
 - Scoring breakdown adds up correctly to Total
 - Track matches Score-to-Track mapping (or override is documented)
 - For Track M: all research triggers checked and researchMode matches
@@ -177,6 +229,9 @@ Before finishing, confirm:
 ## Common failure modes
 
 Avoid these errors:
+- **Trusting the ROUGH at face value** — the ROUGH is an unverified draft; its claims about scope, impact, and safety MUST be spot-checked before scoring
+- **Scoring Ambiguity: 0 without verification** — if you didn't grep the codebase, you don't know whether integration points are "known"; unverified ≠ unambiguous
+- **Missing consumer counts for deletions** — any plan that deletes/replaces an interface must have consumers counted; "downstream is unaffected" is a claim, not a fact
 - Overriding computed track without recording in Decisions Required
 - Omitting research triggers check for M track
 - Missing YAML frontmatter fields

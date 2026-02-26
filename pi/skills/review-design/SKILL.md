@@ -17,24 +17,26 @@ First, read and follow the base skill at `~/dotfiles/claude/plugins/global-skill
 
 Instead of simulating reviewer perspectives internally, dispatch them as real parallel subagents using the `subagent` tool.
 
-### Full Review (Track L — 4 reviewers)
+### Full Review (Track L — 5 reviewers)
 
-Use the subagent tool in parallel mode with all 4 reviewers. Each reviewer receives the same task — the path to the TDD:
+Use the subagent tool in parallel mode with all 5 reviewers. Each reviewer receives the same task — the path to the TDD:
 
 ```
 subagent parallel:
   - security-reviewer: "Review the TDD at docs/plans/<project>/TECHNICAL_DESIGN.md. Also read the existing ledger at docs/plans/<project>/DESIGN_LEDGER.md if it exists. Output findings in the schema from your system prompt."
   - api-reviewer: "Review the TDD at docs/plans/<project>/TECHNICAL_DESIGN.md. Also read the existing ledger at docs/plans/<project>/DESIGN_LEDGER.md if it exists. Output findings in the schema from your system prompt."
   - performance-reviewer: "Review the TDD at docs/plans/<project>/TECHNICAL_DESIGN.md. Also read the existing ledger at docs/plans/<project>/DESIGN_LEDGER.md if it exists. Output findings in the schema from your system prompt."
+  - impact-reviewer: "Review the TDD at docs/plans/<project>/TECHNICAL_DESIGN.md. Also read the RESEARCH_DOSSIER.md if it exists. For every interface, model, or contract that is changed, replaced, or deleted in the TDD: grep the codebase for ALL consumers of that interface. Report as a BLOCKER any consumer that is not accounted for in the TDD's migration plan. Report as should-fix any consumer where the TDD's proposed adaptation looks incomplete or incorrect. Output findings in the standard review schema."
   - domain-reviewer: "Review the TDD at docs/plans/<project>/TECHNICAL_DESIGN.md. Also read the existing ledger at docs/plans/<project>/DESIGN_LEDGER.md if it exists. Output findings in the schema from your system prompt."
 ```
 
-### Lite Review (Track M — 2 reviewers)
+### Lite Review (Track M — 3 reviewers)
 
 ```
 subagent parallel:
   - security-reviewer: "Review the TDD at docs/plans/<project>/TECHNICAL_DESIGN.md. Also read the existing ledger at docs/plans/<project>/DESIGN_LEDGER.md if it exists. Output findings in the schema from your system prompt."
   - api-reviewer: "Review the TDD at docs/plans/<project>/TECHNICAL_DESIGN.md. Also read the existing ledger at docs/plans/<project>/DESIGN_LEDGER.md if it exists. Output findings in the schema from your system prompt."
+  - impact-reviewer: "Review the TDD at docs/plans/<project>/TECHNICAL_DESIGN.md. Also read the RESEARCH_DOSSIER.md if it exists. For every interface, model, or contract that is changed, replaced, or deleted in the TDD: grep the codebase for ALL consumers of that interface. Report as a BLOCKER any consumer that is not accounted for in the TDD's migration plan. Report as should-fix any consumer where the TDD's proposed adaptation looks incomplete or incorrect. Output findings in the standard review schema."
 ```
 
 ## Your Role as Synthesizer
