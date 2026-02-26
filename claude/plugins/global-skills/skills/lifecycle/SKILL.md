@@ -28,23 +28,67 @@ Do NOT use:
 - For Track S work (simple tasks — just implement directly)
 - When you want manual control over individual phases
 
+## CRITICAL: How to invoke
+
+**Always run lifecycle in background mode** with `--bg`. The pipeline runs for
+30-60+ minutes and WILL be killed by bash tool timeouts if run in the foreground.
+
+```bash
+# Start in background — returns immediately with monitoring instructions
+lifecycle docs/plans/my-feature/ROUGH.md --bg
+
+# Check progress (shows current phase + last 15 log lines)
+lifecycle docs/plans/my-feature/ROUGH.md --status
+
+# Read the full log
+cat docs/plans/my-feature/lifecycle.log
+```
+
+### Monitoring workflow
+
+After launching with `--bg`, poll status periodically:
+
+```bash
+lifecycle docs/plans/my-feature/ROUGH.md --status
+```
+
+The status output tells you:
+- **Status**: RUNNING or STOPPED
+- **Phase**: Which phase is currently executing
+- **Detail**: What's happening within that phase
+- **Log**: Path to the full log file
+
+If status shows STOPPED and the phase isn't "complete", check the log for errors
+and resume with `--skip-to`:
+
+```bash
+# Read the log to see what failed
+cat docs/plans/my-feature/lifecycle.log
+
+# Resume from where it stopped
+lifecycle docs/plans/my-feature/ROUGH.md --bg --skip-to bead-review
+```
+
 ## Quick Start
 
 ```bash
-# Full pipeline from rough plan to implementation
-lifecycle docs/plans/my-feature/ROUGH.md
+# Full pipeline (backgrounded)
+lifecycle docs/plans/my-feature/ROUGH.md --bg
 
-# Dry run to see what would happen
+# Dry run to see what would happen (fast, no need for --bg)
 lifecycle docs/plans/my-feature/ROUGH.md --dry-run
 
-# Resume from a specific phase (assumes prior phases completed)
-lifecycle docs/plans/my-feature/ROUGH.md --skip-to implement
+# Resume from a specific phase
+lifecycle docs/plans/my-feature/ROUGH.md --bg --skip-to implement
 
 # Limit parallel workers during implementation
-lifecycle docs/plans/my-feature/ROUGH.md --max-workers 2
+lifecycle docs/plans/my-feature/ROUGH.md --bg --max-workers 2
 
 # Override the model for authoring sessions
-lifecycle docs/plans/my-feature/ROUGH.md --model claude-opus-4-6
+lifecycle docs/plans/my-feature/ROUGH.md --bg --model claude-opus-4-6
+
+# Tail the log live (in your terminal, NOT through an agent)
+lifecycle docs/plans/my-feature/ROUGH.md --tail
 ```
 
 ## What it does
@@ -91,6 +135,8 @@ All artifacts land in `docs/plans/<project>/`:
 | `DESIGN_LEDGER.md` | 2 | Issue lifecycle across review passes |
 | `BEADS.md` | 3 | Atomic implementation tasks with dependency graph |
 | `BEADS_LEDGER.md` | 3 | Bead review findings and lifecycle |
+| `lifecycle.log` | all | Full timestamped log of the run |
+| `lifecycle.status` | all | Machine-readable current status (JSON) |
 
 ## Resuming after failure
 
@@ -98,10 +144,10 @@ If the pipeline fails mid-run, use `--skip-to` to resume:
 
 ```bash
 # Design review approved, but bead review failed — resume from bead review
-lifecycle docs/plans/my-feature/ROUGH.md --skip-to bead-review
+lifecycle docs/plans/my-feature/ROUGH.md --bg --skip-to bead-review
 
 # Beads are in bd, just need implementation
-lifecycle docs/plans/my-feature/ROUGH.md --skip-to implement
+lifecycle docs/plans/my-feature/ROUGH.md --bg --skip-to implement
 ```
 
 Check which artifacts exist in `docs/plans/<project>/` to determine where you are.

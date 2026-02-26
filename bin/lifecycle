@@ -96,6 +96,39 @@ class ProjectContext:
 
 # ─── Logging ─────────────────────────────────────────────────────────────────
 
+_log_file: Optional[Path] = None
+_status_file: Optional[Path] = None
+
+
+def _setup_logging(project_dir: Path):
+    """Initialize file-based logging alongside console output."""
+    global _log_file, _status_file
+    _log_file = project_dir / "lifecycle.log"
+    _status_file = project_dir / "lifecycle.status"
+    # Truncate log on new run
+    _log_file.write_text(f"[{time.strftime('%H:%M:%S')}] Lifecycle started\n")
+    _update_status("starting", "Initializing lifecycle pipeline")
+
+
+def _log_to_file(msg: str):
+    """Append a timestamped line to the log file."""
+    if _log_file:
+        with open(_log_file, "a") as f:
+            f.write(f"[{time.strftime('%H:%M:%S')}] {msg}\n")
+
+
+def _update_status(phase: str, detail: str):
+    """Write a machine-readable status file for polling."""
+    if _status_file:
+        status = {
+            "phase": phase,
+            "detail": detail,
+            "timestamp": time.strftime("%Y-%m-%dT%H:%M:%S"),
+            "pid": os.getpid(),
+        }
+        _status_file.write_text(json.dumps(status, indent=2) + "\n")
+
+
 class Colors:
     GREEN = "\033[0;32m"
     YELLOW = "\033[1;33m"
@@ -110,22 +143,29 @@ def log_phase(msg: str):
     print(f"\n{Colors.BOLD}{Colors.CYAN}{'═' * 60}{Colors.NC}")
     print(f"{Colors.BOLD}{Colors.CYAN}  {msg}{Colors.NC}")
     print(f"{Colors.BOLD}{Colors.CYAN}{'═' * 60}{Colors.NC}\n")
+    _log_to_file(f"══ {msg}")
+    # Extract phase name for status
+    _update_status(msg.lower().replace(" ", "-"), msg)
 
 
 def log_step(msg: str):
     print(f"{Colors.GREEN}[+]{Colors.NC} {msg}")
+    _log_to_file(f"[+] {msg}")
 
 
 def log_warn(msg: str):
     print(f"{Colors.YELLOW}[!]{Colors.NC} {msg}")
+    _log_to_file(f"[!] {msg}")
 
 
 def log_error(msg: str):
     print(f"{Colors.RED}[✗]{Colors.NC} {msg}", file=sys.stderr)
+    _log_to_file(f"[✗] {msg}")
 
 
 def log_info(msg: str):
     print(f"{Colors.BLUE}[i]{Colors.NC} {msg}")
+    _log_to_file(f"[i] {msg}")
 
 
 # ─── RPC Client ──────────────────────────────────────────────────────────────
@@ -652,6 +692,56 @@ def resolve_context(rough_path: str) -> ProjectContext:
     )
 
 
+def cmd_status(rough_path: str):
+    """Read and display the current lifecycle status for a project."""
+    ctx = resolve_context(rough_path)
+    status_file = ctx.project_dir / "lifecycle.status"
+    log_file = ctx.project_dir / "lifecycle.log"
+
+    if not status_file.exists():
+        print("No lifecycle run found for this project.")
+        print(f"  (looked for {status_file})")
+        sys.exit(1)
+
+    status = json.loads(status_file.read_text())
+    pid = status.get("pid")
+    running = False
+    if pid:
+        try:
+            os.kill(pid, 0)
+            running = True
+        except (OSError, ProcessLookupError):
+            pass
+
+    state = "RUNNING" if running else "STOPPED"
+    print(f"Status:    {state}")
+    print(f"Phase:     {status.get('phase', '?')}")
+    print(f"Detail:    {status.get('detail', '?')}")
+    print(f"Updated:   {status.get('timestamp', '?')}")
+    print(f"PID:       {pid or '?'}")
+    print(f"Log:       {log_file}")
+
+    if log_file.exists():
+        print(f"\n── Last 15 log lines ──")
+        lines = log_file.read_text().splitlines()
+        for line in lines[-15:]:
+            print(f"  {line}")
+
+    sys.exit(0)
+
+
+def cmd_tail(rough_path: str):
+    """Tail the lifecycle log file."""
+    ctx = resolve_context(rough_path)
+    log_file = ctx.project_dir / "lifecycle.log"
+
+    if not log_file.exists():
+        print(f"No log file found at {log_file}")
+        sys.exit(1)
+
+    os.execvp("tail", ["tail", "-f", str(log_file)])
+
+
 def main():
     parser = argparse.ArgumentParser(
         description="Lifecycle orchestrator: planning → review → implementation pipeline",
@@ -667,10 +757,43 @@ def main():
     parser.add_argument("--dry-run", action="store_true", help="Show what would be done without executing")
     parser.add_argument("--max-workers", type=int, default=DEFAULT_MAX_WORKERS, help="Max parallel workers for implementation")
     parser.add_argument("--model", help="Override model for authoring sessions")
+    parser.add_argument("--status", action="store_true", help="Show current lifecycle status and recent log")
+    parser.add_argument("--tail", action="store_true", help="Tail the lifecycle log (live)")
+    parser.add_argument("--bg", action="store_true", help="Run in background (daemonize), log to file")
     args = parser.parse_args()
 
+    # Status/tail are read-only commands — handle before anything else
+    if args.status:
+        cmd_status(args.rough_path)
+    if args.tail:
+        cmd_tail(args.rough_path)
+
     ctx = resolve_context(args.rough_path)
+
+    # Background mode: re-exec ourselves with nohup, sans --bg
+    if args.bg:
+        log_file = ctx.project_dir / "lifecycle.log"
+        argv = [a for a in sys.argv if a != "--bg"]
+        print(f"Backgrounding lifecycle (PID will be in {ctx.project_dir / 'lifecycle.status'})")
+        print(f"Monitor with:")
+        print(f"  lifecycle {args.rough_path} --status")
+        print(f"  lifecycle {args.rough_path} --tail")
+        print(f"  tail -f {log_file}")
+
+        with open(log_file, "a") as lf:
+            proc = subprocess.Popen(
+                argv,
+                stdout=lf,
+                stderr=subprocess.STDOUT,
+                start_new_session=True,  # detach from terminal/parent
+            )
+        print(f"Started PID {proc.pid}")
+        sys.exit(0)
+
     skip_to = Phase(args.skip_to) if args.skip_to else None
+
+    # Initialize file logging
+    _setup_logging(ctx.project_dir)
 
     log_info(f"Project: {ctx.project_slug}")
     log_info(f"Plan dir: {ctx.project_dir}")
@@ -732,7 +855,12 @@ def main():
             phase_implement(ctx, max_workers=args.max_workers, dry_run=args.dry_run)
 
         log_phase("Pipeline Complete ✓")
+        _update_status("complete", "Pipeline finished successfully")
 
+    except Exception as e:
+        log_error(f"Pipeline failed: {e}")
+        _update_status("failed", str(e))
+        raise
     finally:
         if rpc:
             rpc.stop()
