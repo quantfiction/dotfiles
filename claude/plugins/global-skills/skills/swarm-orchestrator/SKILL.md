@@ -1,3 +1,8 @@
+---
+name: swarm-orchestrator
+description: Control and monitor the Swarm Orchestrator service via the HTTP API. Use when starting, stopping, monitoring, or managing parallel agent swarms and their escalations.
+---
+
 # Swarm Orchestrator Skill
 
 Control and monitor the Swarm Orchestrator service via the HTTP API.

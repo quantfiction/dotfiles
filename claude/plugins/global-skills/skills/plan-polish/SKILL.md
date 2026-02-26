@@ -275,6 +275,34 @@ Before finishing, confirm:
 - [ ] All UNVERIFIED items either resolved or carried forward with "How to verify:"
 - [ ] Decisions Required from dossier addressed or moved to Open Questions
 
+## Revision Mode
+
+When invoked after a design review returns `REVISE_AND_RESUBMIT`, this skill operates in **revision mode** rather than creating a TDD from scratch.
+
+### Detection
+
+Before starting, check for `DESIGN_REVIEW.md` in the project directory (`docs/plans/<project>/DESIGN_REVIEW.md`). If it exists and contains `REVISE_AND_RESUBMIT`:
+
+1. **Read the Required Revisions section** from `DESIGN_REVIEW.md` — this lists specific changes with anchored references to TDD sections
+2. **Read `DESIGN_LEDGER.md`** if it exists — this tracks issue lifecycle across review passes (net-new, known-open, regression, waived)
+3. **Apply targeted fixes** to the existing `TECHNICAL_DESIGN.md` — do NOT recreate from scratch
+4. **Address every blocker** marked OPEN in the ledger
+5. **Address should-fixes** where feasible
+
+### Revision constraints
+
+- Preserve all sections not mentioned in Required Revisions
+- Do not introduce new architectural changes beyond what the review requested
+- If a revision requires information you don't have, mark it UNVERIFIED with "How to verify:"
+- After applying fixes, re-run the Quality Gate checklist above
+
+### Revision quality gate
+
+In addition to the standard quality gate:
+- [ ] Every blocker from DESIGN_REVIEW.md Required Revisions has been addressed
+- [ ] No regressions introduced (sections that previously passed review should still pass)
+- [ ] Changes are minimal and targeted (not a rewrite)
+
 ## Next Steps
 
 After TECHNICAL_DESIGN.md is complete, check `reviewMode` from INTAKE.md:

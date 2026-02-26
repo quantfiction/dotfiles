@@ -158,6 +158,144 @@ install_opencode_agents() {
     fi
 }
 
+# Install pi coding agent config, extensions, agents, and skills
+install_pi_agents() {
+    local pi_source="$DOTFILES_DIR/pi"
+    local pi_target="$HOME/.pi/agent"
+
+    # Settings and keybindings
+    info "Setting up pi configuration..."
+    if [ -f "$pi_source/settings.json" ]; then
+        create_symlink "$pi_source/settings.json" "$pi_target/settings.json"
+        log "Installed pi settings.json"
+    fi
+    if [ -f "$pi_source/keybindings.json" ]; then
+        create_symlink "$pi_source/keybindings.json" "$pi_target/keybindings.json"
+        log "Installed pi keybindings.json"
+    fi
+
+    # Extensions (each subdirectory symlinked into ~/.pi/agent/extensions/)
+    info "Setting up pi extensions..."
+    local ext_source="$pi_source/extensions"
+    local ext_target="$pi_target/extensions"
+
+    if [ -d "$ext_source" ]; then
+        mkdir -p "$ext_target"
+
+        for ext_dir in "$ext_source"/*/; do
+            if [ -d "$ext_dir" ]; then
+                local ext_name
+                ext_name=$(basename "$ext_dir")
+                create_symlink "$ext_dir" "$ext_target/$ext_name"
+            fi
+        done
+
+        # Run npm install for extensions with package.json
+        for ext_dir in "$ext_target"/*/; do
+            if [ -f "$ext_dir/package.json" ] && [ ! -d "$ext_dir/node_modules" ]; then
+                info "Installing npm deps for $(basename "$ext_dir")..."
+                (cd "$ext_dir" && npm install --silent 2>/dev/null) && \
+                    log "Installed deps for $(basename "$ext_dir")" || \
+                    warn "Failed to install deps for $(basename "$ext_dir")"
+            fi
+        done
+        log "Installed pi extensions"
+    fi
+
+    # Agent definitions (*.md files into ~/.pi/agent/agents/)
+    info "Setting up pi agent definitions..."
+    local agents_source="$pi_source/agents"
+    local agents_target="$pi_target/agents"
+
+    if [ -d "$agents_source" ]; then
+        mkdir -p "$agents_target"
+
+        for agent_file in "$agents_source"/*.md; do
+            if [ -f "$agent_file" ]; then
+                local agent_name
+                agent_name=$(basename "$agent_file")
+                create_symlink "$agent_file" "$agents_target/$agent_name"
+            fi
+        done
+        log "Installed pi agent definitions"
+    else
+        warn "No pi agents found at $agents_source"
+    fi
+
+    # Skills: pi/skills/ contains pi-specific overlays (real directories)
+    # plus symlinks to base skills that don't have overlays.
+    # This avoids duplicate-name warnings from pi.
+    info "Setting up pi skills..."
+    local skills_source="$pi_source/skills"
+    local base_skills="$DOTFILES_DIR/claude/plugins/global-skills/skills"
+
+    if [ -d "$base_skills" ]; then
+        mkdir -p "$skills_source"
+
+        # Symlink base skills that don't have pi overlays
+        for skill_dir in "$base_skills"/*/; do
+            if [ -d "$skill_dir" ]; then
+                local skill_name
+                skill_name=$(basename "$skill_dir")
+                # Only symlink if no pi overlay exists (real directory, not a symlink)
+                if [ ! -d "$skills_source/$skill_name" ] || [ -L "$skills_source/$skill_name" ]; then
+                    create_symlink "$skill_dir" "$skills_source/$skill_name"
+                else
+                    info "Skipping $skill_name (pi overlay exists)"
+                fi
+            fi
+        done
+        log "Installed pi skills"
+    else
+        warn "No base skills found at $base_skills"
+    fi
+
+    # Scripts (bin/ directory → ~/bin/)
+    info "Setting up lifecycle scripts..."
+    local bin_source="$DOTFILES_DIR/bin"
+    local bin_target="$HOME/bin"
+
+    if [ -d "$bin_source" ]; then
+        mkdir -p "$bin_target"
+        for script in "$bin_source"/*; do
+            if [ -f "$script" ]; then
+                local script_name
+                script_name=$(basename "$script")
+                create_symlink "$script" "$bin_target/$script_name"
+            fi
+        done
+        log "Installed scripts to ~/bin/"
+
+        # Ensure ~/bin is on PATH
+        if ! echo "$PATH" | grep -q "$HOME/bin"; then
+            warn "~/bin is not on PATH. Add to your shell profile: export PATH=\"\$HOME/bin:\$PATH\""
+        fi
+    fi
+
+    # Install declared npm packages (from settings.json packages array)
+    info "Installing pi packages from settings.json..."
+    if command -v pi &>/dev/null && [ -f "$pi_source/settings.json" ]; then
+        local packages
+        packages=$(python3 -c "
+import json
+with open('$pi_source/settings.json') as f:
+    for p in json.load(f).get('packages', []):
+        print(p)
+" 2>/dev/null)
+
+        while IFS= read -r pkg; do
+            [ -z "$pkg" ] && continue
+            if pi list 2>/dev/null | grep -q "$pkg"; then
+                info "Package $pkg already installed"
+            else
+                pi install "$pkg" 2>/dev/null && \
+                    log "Installed package $pkg" || \
+                    warn "Failed to install package $pkg"
+            fi
+        done <<< "$packages"
+    fi
+}
+
 # Handle agents-only install modes
 case "$INSTALL_MODE" in
     agents)
@@ -165,9 +303,10 @@ case "$INSTALL_MODE" in
         echo
         install_claude_agents
         install_opencode_agents
+        install_pi_agents
         echo
         log "Agent installation complete!"
-        info "Restart Claude Code / OpenCode to load changes"
+        info "Restart Claude Code / OpenCode / pi to load changes"
         exit 0
         ;;
     claude)
@@ -188,15 +327,25 @@ case "$INSTALL_MODE" in
         info "Restart OpenCode to load changes"
         exit 0
         ;;
+    pi)
+        echo "Installing pi agent definitions and skills..."
+        echo
+        install_pi_agents
+        echo
+        log "Pi agent installation complete!"
+        info "Restart pi to load changes"
+        exit 0
+        ;;
     all)
         # Continue with full install below
         ;;
     *)
-        echo "Usage: $0 [all|agents|claude|opencode]"
+        echo "Usage: $0 [all|agents|claude|opencode|pi]"
         echo "  all      - Install everything (default)"
-        echo "  agents   - Install only agent commands/skills (Claude + OpenCode)"
+        echo "  agents   - Install only agent commands/skills (Claude + OpenCode + pi)"
         echo "  claude   - Install only Claude agent commands/skills"
         echo "  opencode - Install only OpenCode agent commands/skills"
+        echo "  pi       - Install only pi agent definitions and skills"
         exit 1
         ;;
 esac

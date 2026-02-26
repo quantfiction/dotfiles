@@ -1,0 +1,13 @@
+{
+  "lastChangelogVersion": "0.54.2",
+  "defaultProvider": "anthropic",
+  "defaultModel": "claude-opus-4-6",
+  "skills": [
+    "~/dotfiles/pi/skills"
+  ],
+  "defaultThinkingLevel": "medium",
+  "packages": [
+    "npm:pi-agentic-compaction",
+    "npm:pi-powerline-footer"
+  ]
+}

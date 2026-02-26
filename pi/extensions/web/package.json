@@ -1,0 +1,16 @@
+{
+  "name": "web",
+  "version": "1.0.0",
+  "description": "Web search, fetch, and ask tools for pi (Exa + markdown.new + Perplexity)",
+  "main": "index.ts",
+  "pi": {
+    "extensions": ["./index.ts"]
+  },
+  "keywords": [],
+  "author": "",
+  "license": "ISC",
+  "dependencies": {
+    "turndown": "^7.2.2",
+    "@types/turndown": "^5.0.6"
+  }
+}

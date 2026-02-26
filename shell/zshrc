@@ -41,3 +41,5 @@ export NTM_PROJECTS_BASE="~/repositories"
 
 # opencode
 export PATH=/home/ubuntu/.opencode/bin:$PATH
+export EXA_API_KEY=c6c95bad-2928-489e-8182-ad9dd247d684
+# export PERPLEXITY_API_KEY=  # Set in .env or secrets manager
