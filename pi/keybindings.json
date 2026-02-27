@@ -1,5 +1,7 @@
 {
   "toggleThinking": ["ctrl+alt+t"],
   "cycleThinkingLevel": ["ctrl+t"],
-  "tab": ["tab"]
+  "tab": ["tab"],
+  "newLine": ["shift+enter", "ctrl+j"],
+  "submit": ["enter"]
 }

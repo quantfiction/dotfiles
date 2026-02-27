@@ -5,9 +5,11 @@
   "skills": [
     "~/dotfiles/pi/skills"
   ],
-  "defaultThinkingLevel": "medium",
+  "defaultThinkingLevel": "minimal",
   "packages": [
     "npm:pi-agentic-compaction",
-    "npm:pi-powerline-footer"
+    "npm:pi-powerline-footer",
+    "~/.pi/agent/pi-markdown-preview",
+    "npm:pi-context"
   ]
 }

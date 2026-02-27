@@ -33,6 +33,9 @@ const ASK_DENY = new Set(["edit", "write"]);
 const PLAN_DENY = new Set<string>(); // plan allows everything
 const BUILD_DENY = new Set<string>(); // build allows everything
 
+// Keep conversation checkpointing/navigation available in all modes.
+const ALWAYS_ALLOW = new Set(["context_tag", "context_log", "context_checkout"]);
+
 function getDenyList(mode: Mode): Set<string> {
 	switch (mode) {
 		case "ask":
@@ -245,8 +248,9 @@ export default function agentMode(pi: ExtensionAPI): void {
 
 	function applyMode(ctx: ExtensionContext): void {
 		const deny = getDenyList(currentMode);
-		const allowed = pi.getAllTools().map(t => t.name).filter(n => !deny.has(n));
-		pi.setActiveTools(allowed);
+		const allowed = new Set(pi.getAllTools().map(t => t.name).filter(n => !deny.has(n)));
+		for (const toolName of ALWAYS_ALLOW) allowed.add(toolName);
+		pi.setActiveTools([...allowed]);
 		const theme = ctx.ui.theme;
 		const colors: Record<Mode, string> = {
 			ask: theme.fg("accent", MODE_LABELS.ask),
