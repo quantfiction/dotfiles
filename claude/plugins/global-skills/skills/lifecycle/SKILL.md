@@ -20,7 +20,7 @@ intake → research → plan-polish → review-design → write-beads → bead-r
 ## When to use
 
 Use when you have:
-- A rough plan at `docs/plans/<project>/ROUGH.md`
+- A rough plan at `docs/plans/<project>/ROUGH.md` (use `/write-rough` to create one from an exploration session)
 - Want to run the full planning lifecycle hands-free
 - Want to skip manual skill chaining
 
